@@ -29,7 +29,7 @@ export const settingsMenusGuide: GuideDetail = {
   category: 'guides',
   subcategory: 'beginner',
   image: settingsGuide1,
-  author: 'Mini Legion',
+  author: 'Step Bro',
   date: '2026-01-07',
   readTime: '8 min',
   tags: ['settings', 'menus', 'tips', 'basics', 'afk', 'dismantle', 'bank', 'food', 'heirloom', 'skills', 'dungeon'],

@@ -12,7 +12,7 @@ export const heirloomXpGuide: GuideDetail = {
   category: 'guides',
   subcategory: 'farming',
   image: heirloomGuide,
-  author: 'Mini Legion',
+  author: 'ʀᴇᴅᴍ²',
   date: '2026-01-07',
   readTime: '6 min',
   tags: ['heirloom', 'xp', 'experience', 'armor', 'equipment', 'leveling', 'alts', 'dungeons', 'reputation'],

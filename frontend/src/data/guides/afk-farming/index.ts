@@ -14,7 +14,7 @@ export const afkFarmingGuide: GuideDetail = {
   category: 'guides',
   subcategory: 'beginner',
   image: afkGuideAlliance,
-  author: 'Mini Legion',
+  author: 'ʀᴇᴅᴍ²',
   date: '2026-01-07',
   readTime: '4 min',
   tags: ['afk', 'farming', 'exp', 'leveling', 'stamina', 'alliance', 'horde'],

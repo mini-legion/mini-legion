@@ -18,7 +18,7 @@ export const incenseSilkGuide: GuideDetail = {
   category: 'guides',
   subcategory: 'farming',
   image: silkGuide1,
-  author: 'Mini Legion',
+  author: 'Ignorant',
   date: '2026-01-07',
   readTime: '8 min',
   tags: ['incense silk', 'shirt upgrade', 'cp', 'f2p', 'arena', 'battle pass', 'elite farming', 'resources'],
