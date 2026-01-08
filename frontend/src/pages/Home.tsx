@@ -9,7 +9,6 @@ import {
 import hunterLogo from "../assets/classes/hunter-logo.png";
 import priestLogo from "../assets/classes/priest-logo.png";
 import mageLogo from "../assets/classes/mage-logo.png";
-import paladinLogo from "../assets/classes/paladin-logo.png";
 
 const quickLinks = [
   {
