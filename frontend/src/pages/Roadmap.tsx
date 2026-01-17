@@ -1,44 +1,33 @@
 import { useState, useRef } from 'react';
 import { PageHeader, Card } from '../components/UI';
 import { storage } from '../lib/api';
+import { useRoadmapItems } from '../lib/hooks';
 
-interface RoadmapImage {
+interface RoadmapDisplay {
   id: string;
   title: string;
   date: string;
   image: string;
 }
 
-// Ordered from most recent to oldest
-const roadmaps: RoadmapImage[] = [
-  {
-    id: '4',
-    title: 'Roadmap 2026 - Divine & Dragon',
-    date: 'January 2026',
-    image: storage.roadmap.getImageUrl('roadmap-4.png'),
-  },
-  {
-    id: '3',
-    title: 'Roadmap 2025 - Christmas Update',
-    date: 'December 2025',
-    image: storage.roadmap.getImageUrl('roadmap-3.png'),
-  },
-  {
-    id: '2',
-    title: 'Roadmap 2025 - Late November',
-    date: 'Late November 2025',
-    image: storage.roadmap.getImageUrl('roadmap-2.png'),
-  },
-  {
-    id: '1',
-    title: 'Roadmap 2025 - Global Release',
-    date: 'October - November 2025',
-    image: storage.roadmap.getImageUrl('roadmap-1.png'),
-  },
-];
+// Helper to format date from DB format to display format
+function formatRoadmapDate(dateStr: string | null): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
 
 export const Roadmap = () => {
-  const [selectedImage, setSelectedImage] = useState<RoadmapImage | null>(null);
+  const { data: roadmapItems, loading, error } = useRoadmapItems();
+
+  // Transform DB data to display format
+  const roadmaps: RoadmapDisplay[] = (roadmapItems || []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    date: formatRoadmapDate(item.date),
+    image: storage.roadmap.getImageUrl(`roadmap-${item.id}.png`),
+  }));
+  const [selectedImage, setSelectedImage] = useState<RoadmapDisplay | null>(null);
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -70,7 +59,7 @@ export const Roadmap = () => {
 
   const handleMouseUp = () => setIsDragging(false);
 
-  const openLightbox = (roadmap: RoadmapImage) => {
+  const openLightbox = (roadmap: RoadmapDisplay) => {
     setSelectedImage(roadmap);
     setZoom(1);
     setPosition({ x: 0, y: 0 });
@@ -91,7 +80,31 @@ export const Roadmap = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[3/4] bg-slate-800 rounded-xl" />
+                <div className="p-3 space-y-2">
+                  <div className="h-4 bg-slate-800 rounded w-3/4" />
+                  <div className="h-3 bg-slate-800 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <div className="text-red-400 text-lg">Failed to load roadmaps</div>
+            <p className="text-slate-500 text-sm mt-2">Please try again later</p>
+          </div>
+        )}
+
         {/* Roadmap Grid */}
+        {!loading && !error && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {roadmaps.map((roadmap, index) => (
             <Card
@@ -151,6 +164,7 @@ export const Roadmap = () => {
             </Card>
           ))}
         </div>
+        )}
 
         {/* Info Card */}
         <div className="mt-12 flex justify-center">
