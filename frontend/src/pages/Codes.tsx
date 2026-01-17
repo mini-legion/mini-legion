@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { PageHeader, Card, Badge } from '../components/UI';
-import { dummyCodes } from '../data';
+import { useCodes } from '../lib/hooks';
 
 export const Codes = () => {
+  const { data: codes, loading, error } = useCodes();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'expired'>('all');
 
@@ -12,18 +13,56 @@ export const Codes = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const filteredCodes = dummyCodes.filter(code => {
-    if (filter === 'active') return code.isActive;
-    if (filter === 'expired') return !code.isActive;
+  if (loading) {
+    return (
+      <div>
+        <PageHeader
+          title="Redeem Codes"
+          subtitle="Get free rewards with these active codes"
+          gradient="green"
+        />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Redeem Codes"
+          subtitle="Get free rewards with these active codes"
+          gradient="green"
+        />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <Card className="p-8 text-center">
+            <div className="text-5xl mb-4">😕</div>
+            <h3 className="text-xl font-bold text-slate-300 mb-2">Error loading codes</h3>
+            <p className="text-slate-500">Please try again later</p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const allCodes = codes || [];
+
+  const filteredCodes = allCodes.filter(code => {
+    if (filter === 'active') return code.is_active;
+    if (filter === 'expired') return !code.is_active;
     return true;
   });
 
-  const activeCodes = dummyCodes.filter(c => c.isActive).length;
+  const activeCodes = allCodes.filter(c => c.is_active).length;
 
   return (
     <div>
-      <PageHeader 
-        title="Redeem Codes" 
+      <PageHeader
+        title="Redeem Codes"
         subtitle="Get free rewards with these active codes"
         gradient="green"
       />
@@ -36,7 +75,7 @@ export const Codes = () => {
             <div className="text-slate-400 text-sm">Active Codes</div>
           </Card>
           <Card className="p-5 text-center">
-            <div className="text-3xl font-bold text-slate-400">{dummyCodes.length - activeCodes}</div>
+            <div className="text-3xl font-bold text-slate-400">{allCodes.length - activeCodes}</div>
             <div className="text-slate-400 text-sm">Expired Codes</div>
           </Card>
         </div>
@@ -62,26 +101,26 @@ export const Codes = () => {
         {/* Codes List */}
         <div className="space-y-4">
           {filteredCodes.map((code) => (
-            <Card 
-              key={code.id} 
-              className={`p-6 ${!code.isActive ? 'opacity-60' : ''}`}
-              glow={code.isActive ? 'green' : 'none'}
+            <Card
+              key={code.id}
+              className={`p-6 ${!code.is_active ? 'opacity-60' : ''}`}
+              glow={code.is_active ? 'green' : 'none'}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     <code className={`px-4 py-2 rounded-lg font-mono font-bold text-lg ${
-                      code.isActive 
-                        ? 'bg-green-500/20 border border-green-500/30 text-green-400' 
+                      code.is_active
+                        ? 'bg-green-500/20 border border-green-500/30 text-green-400'
                         : 'bg-slate-700/50 border border-slate-600 text-slate-500 line-through'
                     }`}>
                       {code.code}
                     </code>
-                    <Badge variant={code.isActive ? 'success' : 'danger'}>
-                      {code.isActive ? 'Active' : 'Expired'}
+                    <Badge variant={code.is_active ? 'success' : 'danger'}>
+                      {code.is_active ? 'Active' : 'Expired'}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2 mb-3">
                     {code.rewards.map((reward, idx) => (
                       <span key={idx} className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-sm">
@@ -89,21 +128,21 @@ export const Codes = () => {
                       </span>
                     ))}
                   </div>
-                  
+
                   <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span>Added: {new Date(code.dateAdded).toLocaleDateString()}</span>
-                    {code.expiresAt && (
-                      <span className={code.isActive ? 'text-amber-400' : 'text-red-400'}>
-                        {code.isActive ? 'Expires' : 'Expired'}: {new Date(code.expiresAt).toLocaleDateString()}
+                    <span>Added: {new Date(code.date_added).toLocaleDateString()}</span>
+                    {code.expires_at && (
+                      <span className={code.is_active ? 'text-amber-400' : 'text-red-400'}>
+                        {code.is_active ? 'Expires' : 'Expired'}: {new Date(code.expires_at).toLocaleDateString()}
                       </span>
                     )}
-                    {!code.expiresAt && code.isActive && (
+                    {!code.expires_at && code.is_active && (
                       <span className="text-green-400">No expiration</span>
                     )}
                   </div>
                 </div>
-                
-                {code.isActive && (
+
+                {code.is_active && (
                   <button
                     onClick={() => handleCopy(code.code)}
                     className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
@@ -162,4 +201,3 @@ export const Codes = () => {
     </div>
   );
 };
-

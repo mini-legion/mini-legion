@@ -1,18 +1,39 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, Badge } from '../components/UI';
-import { buildDetails } from '../data/buildsData';
-import hunterLogo from '../assets/classes/hunter-logo.png';
-import priestLogo from '../assets/classes/priest-logo.png';
-import mageLogo from '../assets/classes/mage-logo.png';
-import warriorLogo from '../assets/classes/warrior-logo.png';
-import rogueLogo from '../assets/classes/rogue-logo.png';
-import paladinLogo from '../assets/classes/paladin-logo.png';
+import { useBuild } from '../lib/hooks';
+import { storage } from '../lib/api';
 
 export const BuildDetail = () => {
   const { buildId } = useParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const build = buildDetails.find(b => b.id === buildId);
+  const { data: build, loading, error } = useBuild(buildId || '');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😕</div>
+          <h2 className="text-2xl font-bold text-slate-200 mb-2">Error Loading Build</h2>
+          <p className="text-slate-400 mb-6">Please try again later.</p>
+          <Link
+            to="/builds"
+            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-lg hover:shadow-lg hover:shadow-amber-500/30 transition-all"
+          >
+            Back to Builds
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!build) {
     return (
@@ -21,8 +42,8 @@ export const BuildDetail = () => {
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-2xl font-bold text-slate-200 mb-2">Build Not Found</h2>
           <p className="text-slate-400 mb-6">The build you're looking for doesn't exist.</p>
-          <Link 
-            to="/builds" 
+          <Link
+            to="/builds"
             className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-lg hover:shadow-lg hover:shadow-amber-500/30 transition-all"
           >
             Back to Builds
@@ -42,16 +63,16 @@ export const BuildDetail = () => {
   };
 
   const classIcons: Record<string, string> = {
-    hunter: hunterLogo,
-    priest: priestLogo,
-    mage: mageLogo,
-    warrior: warriorLogo,
-    rogue: rogueLogo,
-    paladin: paladinLogo,
+    hunter: storage.classes.getImageUrl('hunter-logo.png'),
+    priest: storage.classes.getImageUrl('priest-logo.png'),
+    mage: storage.classes.getImageUrl('mage-logo.png'),
+    warrior: storage.classes.getImageUrl('warrior-logo.png'),
+    rogue: storage.classes.getImageUrl('rogue-logo.png'),
+    paladin: storage.classes.getImageUrl('paladin-logo.png'),
   };
 
-  const colors = classColors[build.heroClass.toLowerCase()] || classColors.hunter;
-  const icon = classIcons[build.heroClass.toLowerCase()] || '⚔️';
+  const colors = classColors[build.hero_class.toLowerCase()] || classColors.hunter;
+  const icon = classIcons[build.hero_class.toLowerCase()] || '⚔️';
   const isHealer = build.role === 'Healer';
 
   return (
@@ -72,8 +93,8 @@ export const BuildDetail = () => {
             <span className="text-slate-600">/</span>
             <Link to="/builds" className="text-slate-400 hover:text-amber-400 transition-colors">Builds</Link>
             <span className="text-slate-600">/</span>
-            <Link to={`/builds/${build.heroClass.toLowerCase()}`} className={`text-slate-400 hover:${colors.text} transition-colors`}>
-              {build.heroClass}
+            <Link to={`/builds/${build.hero_class.toLowerCase()}`} className={`text-slate-400 hover:${colors.text} transition-colors`}>
+              {build.hero_class}
             </Link>
             <span className="text-slate-600">/</span>
             <span className={colors.text}>{build.spec}</span>
@@ -86,7 +107,7 @@ export const BuildDetail = () => {
             {/* Class Icon */}
             <div className="w-32 h-32 lg:w-44 lg:h-44 flex items-center justify-center text-6xl lg:text-7xl shrink-0 animate-float">
               {icon.length > 4 || icon.startsWith('/') ? (
-                <img src={icon} alt={build.heroClass} className="w-full h-full object-contain filter drop-shadow-2xl" />
+                <img src={icon} alt={build.hero_class} className="w-full h-full object-contain filter drop-shadow-2xl" />
               ) : (
                 icon
               )}
@@ -101,7 +122,7 @@ export const BuildDetail = () => {
                 {isHealer && <Badge variant="success" size="md">Healer</Badge>}
               </div>
               <h1 className={`text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent mb-3`}>
-                {build.heroClass} {build.spec}
+                {build.hero_class} {build.spec}
               </h1>
               <div className="flex items-center gap-2 mb-4">
                 <p className="text-xl lg:text-2xl text-slate-300 font-medium">{build.title}</p>
@@ -118,7 +139,7 @@ export const BuildDetail = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-12">
         
         {/* Introduction (for healer builds) */}
-        {build.introText && (
+        {build.intro_text && (
           <section>
             <Card className="p-6 border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent" glow="amber">
               <div className="flex items-start gap-4">
@@ -127,7 +148,7 @@ export const BuildDetail = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-amber-400 mb-2">Welcome</h3>
-                  <p className="text-slate-300 leading-relaxed">{build.introText}</p>
+                  <p className="text-slate-300 leading-relaxed">{build.intro_text}</p>
                 </div>
               </div>
             </Card>
@@ -148,11 +169,11 @@ export const BuildDetail = () => {
                 This infographic contains all skills, talent trees, and stat priorities
               </p>
               <div className="flex justify-center">
-                <img 
-                  src={build.images.skills} 
-                  alt="Complete Build Overview" 
+                <img
+                  src={storage.getUrl(build.images.skills) || ''}
+                  alt="Complete Build Overview"
                   className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-2xl cursor-zoom-in hover:scale-[1.01] transition-transform"
-                  onClick={() => setSelectedImage(build.images.skills)}
+                  onClick={() => setSelectedImage(storage.getUrl(build.images.skills))}
                 />
               </div>
             </Card>
@@ -167,11 +188,11 @@ export const BuildDetail = () => {
             </div>
             <Card className="overflow-hidden p-6" glow={isHealer ? 'amber' : 'green'}>
               <div className="flex justify-center">
-                <img 
-                  src={build.images.skills} 
-                  alt="Build Skills" 
+                <img
+                  src={storage.getUrl(build.images.skills) || ''}
+                  alt="Build Skills"
                   className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-2xl cursor-zoom-in hover:scale-[1.01] transition-transform"
-                  onClick={() => setSelectedImage(build.images.skills)}
+                  onClick={() => setSelectedImage(storage.getUrl(build.images.skills))}
                 />
               </div>
             </Card>
@@ -195,11 +216,11 @@ export const BuildDetail = () => {
                     Dungeon Gear (BIS Example)
                   </h3>
                   <div className="flex justify-center">
-                    <img 
-                      src={build.images.dungeonGear} 
-                      alt="Dungeon Gear Setup" 
+                    <img
+                      src={storage.getUrl(build.images.dungeonGear) || ''}
+                      alt="Dungeon Gear Setup"
                       className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-xl cursor-zoom-in hover:scale-[1.01] transition-transform"
-                      onClick={() => setSelectedImage(build.images.dungeonGear!)}
+                      onClick={() => setSelectedImage(storage.getUrl(build.images.dungeonGear))}
                     />
                   </div>
                 </Card>
@@ -211,11 +232,11 @@ export const BuildDetail = () => {
                     Adventure Gear
                   </h3>
                   <div className="flex justify-center">
-                    <img 
-                      src={build.images.adventureGear} 
-                      alt="Adventure Gear Setup" 
+                    <img
+                      src={storage.getUrl(build.images.adventureGear) || ''}
+                      alt="Adventure Gear Setup"
                       className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-xl cursor-zoom-in hover:scale-[1.01] transition-transform"
-                      onClick={() => setSelectedImage(build.images.adventureGear!)}
+                      onClick={() => setSelectedImage(storage.getUrl(build.images.adventureGear))}
                     />
                   </div>
                 </Card>
@@ -225,7 +246,7 @@ export const BuildDetail = () => {
         )}
 
         {/* Gear Priority Section - Only show if build has gearGuide data */}
-        {build.gearGuide && (
+        {build.gear_guide && (build.gear_guide.dungeonStats || build.gear_guide.adventureStats) && (
           <section>
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
@@ -236,107 +257,111 @@ export const BuildDetail = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Dungeon Stats */}
-              <Card className="p-6 h-full" glow="purple">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl shadow-lg">
-                    🏰
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-purple-400">Dungeon Gear</h3>
-                    <p className="text-slate-400 text-sm">Primary Stats</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
-                    <h4 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
-                      <span className="text-lg">⭐</span> Stat Priority
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {build.gearGuide.dungeonStats.priority.map((stat, idx) => (
-                        <span key={stat} className="contents">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                            idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
-                            idx === 1 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                            'bg-red-500/20 text-red-300 border-red-500/30'
-                          }`}>{stat}</span>
-                          {idx < build.gearGuide!.dungeonStats.priority.length - 1 && (
-                            <span className="text-slate-500">&gt;</span>
-                          )}
-                        </span>
-                      ))}
-                      <span className="text-slate-500">&gt;</span>
-                      <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-400 text-sm font-medium border border-slate-600">Others</span>
+              {build.gear_guide.dungeonStats && (
+                <Card className="p-6 h-full" glow="purple">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl shadow-lg">
+                      🏰
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-purple-400">Dungeon Gear</h3>
+                      <p className="text-slate-400 text-sm">Primary Stats</p>
                     </div>
                   </div>
-                  
-                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p className="text-slate-300 text-sm leading-relaxed">{build.gearGuide.dungeonStats.description}</p>
+
+                  <div className="space-y-4">
+                    <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
+                      <h4 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                        <span className="text-lg">⭐</span> Stat Priority
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {(build.gear_guide.dungeonStats?.priority || []).map((stat, idx, arr) => (
+                          <span key={stat} className="contents">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                              idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+                              idx === 1 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                              'bg-red-500/20 text-red-300 border-red-500/30'
+                            }`}>{stat}</span>
+                            {idx < arr.length - 1 && (
+                              <span className="text-slate-500">&gt;</span>
+                            )}
+                          </span>
+                        ))}
+                        <span className="text-slate-500">&gt;</span>
+                        <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-400 text-sm font-medium border border-slate-600">Others</span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                      <p className="text-slate-300 text-sm leading-relaxed">{build.gear_guide.dungeonStats.description}</p>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              )}
 
               {/* Adventure Stats */}
-              <Card className="p-6 h-full" glow="amber">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg">
-                    🗺️
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-amber-400">Adventure Gear</h3>
-                    <p className="text-slate-400 text-sm">Attribute Priority</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
-                    <h4 className="font-semibold text-slate-200 mb-2 flex items-center gap-2">
-                      <span className="text-lg">🛡️</span> Armor
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      {build.gearGuide.adventureStats.armor.priority.map((stat, idx) => (
-                        <span key={stat} className="contents">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                            idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
-                            'bg-slate-700/50 text-slate-300 border-slate-600'
-                          }`}>{stat}</span>
-                          {idx < build.gearGuide!.adventureStats.armor.priority.length - 1 && (
-                            <span className="text-slate-500">&gt;</span>
-                          )}
-                        </span>
-                      ))}
+              {build.gear_guide.adventureStats && (
+                <Card className="p-6 h-full" glow="amber">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg">
+                      🗺️
                     </div>
-                    <p className="text-slate-400 text-xs">{build.gearGuide.adventureStats.armor.description}</p>
+                    <div>
+                      <h3 className="text-xl font-bold text-amber-400">Adventure Gear</h3>
+                      <p className="text-slate-400 text-sm">Attribute Priority</p>
+                    </div>
                   </div>
 
-                  <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
-                    <h4 className="font-semibold text-slate-200 mb-2 flex items-center gap-2">
-                      <span className="text-lg">💍</span> Accessories (Necklace/Rings/Trinkets/Weapon)
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      {build.gearGuide.adventureStats.accessories.priority.map((stat, idx) => (
-                        <span key={stat} className="contents">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                            idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
-                            idx === 1 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                            'bg-red-500/20 text-red-300 border-red-500/30'
-                          }`}>{stat}</span>
-                          {idx < build.gearGuide!.adventureStats.accessories.priority.length - 1 && (
-                            <span className="text-slate-500">&gt;</span>
-                          )}
-                        </span>
-                      ))}
+                  <div className="space-y-4">
+                    <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
+                      <h4 className="font-semibold text-slate-200 mb-2 flex items-center gap-2">
+                        <span className="text-lg">🛡️</span> Armor
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {(build.gear_guide.adventureStats?.armor?.priority || []).map((stat, idx, arr) => (
+                          <span key={stat} className="contents">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                              idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+                              'bg-slate-700/50 text-slate-300 border-slate-600'
+                            }`}>{stat}</span>
+                            {idx < arr.length - 1 && (
+                              <span className="text-slate-500">&gt;</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-slate-400 text-xs">{build.gear_guide.adventureStats?.armor?.description}</p>
                     </div>
-                    <p className="text-slate-400 text-xs">{build.gearGuide.adventureStats.accessories.description}</p>
+
+                    <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
+                      <h4 className="font-semibold text-slate-200 mb-2 flex items-center gap-2">
+                        <span className="text-lg">💍</span> Accessories (Necklace/Rings/Trinkets/Weapon)
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {(build.gear_guide.adventureStats?.accessories?.priority || []).map((stat, idx, arr) => (
+                          <span key={stat} className="contents">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                              idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+                              idx === 1 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                              'bg-red-500/20 text-red-300 border-red-500/30'
+                            }`}>{stat}</span>
+                            {idx < arr.length - 1 && (
+                              <span className="text-slate-500">&gt;</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-slate-400 text-xs">{build.gear_guide.adventureStats?.accessories?.description}</p>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              )}
             </div>
           </section>
         )}
 
         {/* Refines Section (for healer builds) */}
-        {build.refinesGuide && (
+        {build.refines_guide && (build.refines_guide.priority?.length || build.refines_guide.details?.length) && (
           <section>
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
@@ -353,11 +378,11 @@ export const BuildDetail = () => {
                   Priority Order
                 </h3>
                 <div className="space-y-2">
-                  {build.refinesGuide.priority.map((stat, idx) => (
+                  {(build.refines_guide.priority || []).map((stat, idx) => (
                     <div key={stat} className="flex items-center gap-2">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        idx < 2 ? 'bg-amber-500/30 text-amber-300' : 
-                        idx < 4 ? 'bg-purple-500/30 text-purple-300' : 
+                        idx < 2 ? 'bg-amber-500/30 text-amber-300' :
+                        idx < 4 ? 'bg-purple-500/30 text-purple-300' :
                         'bg-slate-700 text-slate-400'
                       }`}>{idx + 1}</span>
                       <span className={`text-sm ${idx < 2 ? 'text-amber-300 font-semibold' : 'text-slate-300'}`}>{stat}</span>
@@ -373,11 +398,11 @@ export const BuildDetail = () => {
                   Slot-Specific Refines
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {build.refinesGuide.details.map((detail) => (
+                  {(build.refines_guide.details || []).map((detail) => (
                     <div key={detail.slot} className={`p-3 rounded-lg ${colors.bg} border ${colors.border}`}>
                       <h4 className="font-semibold text-slate-200 text-sm mb-2">{detail.slot}</h4>
                       <div className="flex flex-wrap gap-1">
-                        {detail.stats.map((stat) => (
+                        {(detail.stats || []).map((stat) => (
                           <span key={stat} className={`px-2 py-0.5 rounded text-xs font-medium ${
                             stat.includes('MUST') ? 'bg-red-500/30 text-red-300 border border-red-500/50' :
                             'bg-amber-500/20 text-amber-300 border border-amber-500/30'
@@ -391,13 +416,13 @@ export const BuildDetail = () => {
             </div>
 
             {/* Refine Tips */}
-            {build.refinesGuide.tips && (
+            {build.refines_guide.tips && (
               <Card className="mt-6 p-5 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent" glow="green">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">💡</span>
                   <div>
                     <h4 className="font-bold text-cyan-400 mb-1">Pro Tip</h4>
-                    <p className="text-slate-300 text-sm leading-relaxed">{build.refinesGuide.tips}</p>
+                    <p className="text-slate-300 text-sm leading-relaxed">{build.refines_guide.tips}</p>
                   </div>
                 </div>
               </Card>
@@ -406,7 +431,7 @@ export const BuildDetail = () => {
         )}
 
         {/* Spells Guide (for healer builds) */}
-        {build.spellsGuide && (
+        {build.spells_guide && build.spells_guide.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
@@ -422,7 +447,7 @@ export const BuildDetail = () => {
                 Autocast Spells (In Order)
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {build.spellsGuide.filter(s => s.autocast).sort((a, b) => (a.priority || 99) - (b.priority || 99)).map((spell, index) => (
+                {(build.spells_guide || []).filter(s => s.autocast).sort((a, b) => (a.priority || 99) - (b.priority || 99)).map((spell, index) => (
                   <Card key={spell.skill} className="p-4 group" glow="green">
                     <div className="flex items-start gap-3">
                       <div className="relative flex-shrink-0">
@@ -455,7 +480,7 @@ export const BuildDetail = () => {
                 Manual/Situational Spells
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {build.spellsGuide.filter(s => !s.autocast).map((spell) => (
+                {(build.spells_guide || []).filter(s => !s.autocast).map((spell) => (
                   <Card key={spell.skill} className={`p-4 group ${spell.skill === 'Holy Blast' ? 'opacity-50' : ''}`} glow={spell.skill === 'Holy Blast' ? undefined : 'amber'}>
                     <div className="flex items-start gap-3">
                       <div className={`w-12 h-12 rounded-xl ${spell.skill === 'Holy Blast' ? 'bg-slate-700' : `bg-gradient-to-br ${colors.gradient}`} flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
@@ -484,7 +509,7 @@ export const BuildDetail = () => {
         )}
 
         {/* Autocast Order (for healer builds) */}
-        {build.autocastOrder && (
+        {build.autocast_order && build.autocast_order.length > 0 && (
           <section>
             <Card className="p-6 border-green-500/30 bg-gradient-to-br from-green-500/10 to-transparent" glow="green">
               <div className="flex items-start gap-4">
@@ -494,7 +519,7 @@ export const BuildDetail = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-green-400 mb-4">Autocast Setup Order</h3>
                   <div className="space-y-2">
-                    {build.autocastOrder.map((item, idx) => (
+                    {(build.autocast_order || []).map((item, idx) => (
                       <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
                         <span className="w-6 h-6 rounded-full bg-green-500/30 text-green-300 flex items-center justify-center text-sm font-bold flex-shrink-0">{idx + 1}</span>
                         <p className="text-slate-300 text-sm">{item}</p>
@@ -508,7 +533,7 @@ export const BuildDetail = () => {
         )}
 
         {/* Healing Tips (for healer builds) */}
-        {build.healingTips && (
+        {build.healing_tips && build.healing_tips.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
@@ -519,7 +544,7 @@ export const BuildDetail = () => {
 
             <Card className="p-6" glow="amber">
               <div className="space-y-4">
-                {build.healingTips.map((tip, idx) => (
+                {(build.healing_tips || []).map((tip, idx) => (
                   <div key={idx} className={`flex items-start gap-3 p-4 rounded-xl ${
                     idx === 0 ? 'bg-red-500/10 border border-red-500/30' : 
                     idx === 1 ? 'bg-amber-500/10 border border-amber-500/30' : 
@@ -560,11 +585,11 @@ export const BuildDetail = () => {
                   Primary Tree
                 </h3>
                 <div className="flex justify-center">
-                  <img 
-                    src={build.images.tree1} 
-                    alt="Primary Talent Tree" 
+                  <img
+                    src={storage.getUrl(build.images.tree1) || ''}
+                    alt="Primary Talent Tree"
                     className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-xl cursor-zoom-in hover:scale-[1.01] transition-transform"
-                    onClick={() => setSelectedImage(build.images.tree1)}
+                    onClick={() => setSelectedImage(storage.getUrl(build.images.tree1))}
                   />
                 </div>
               </Card>
@@ -574,11 +599,11 @@ export const BuildDetail = () => {
                   Secondary Tree
                 </h3>
                 <div className="flex justify-center">
-                  <img 
-                    src={build.images.tree2} 
-                    alt="Secondary Talent Tree" 
+                  <img
+                    src={storage.getUrl(build.images.tree2) || ''}
+                    alt="Secondary Talent Tree"
                     className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-xl cursor-zoom-in hover:scale-[1.01] transition-transform"
-                    onClick={() => setSelectedImage(build.images.tree2)}
+                    onClick={() => setSelectedImage(storage.getUrl(build.images.tree2))}
                   />
                 </div>
               </Card>
@@ -587,14 +612,14 @@ export const BuildDetail = () => {
         )}
 
         {/* Talent Tips - Show regardless of image layout */}
-        {build.talentTips && (
+        {build.talent_tips && (
           <section>
             <Card className="p-5 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent" glow="green">
               <div className="flex items-start gap-3">
                 <span className="text-2xl">🎯</span>
                 <div>
                   <h4 className="font-bold text-cyan-400 mb-1">Talent Tips</h4>
-                  <p className="text-slate-300 text-sm leading-relaxed">{build.talentTips}</p>
+                  <p className="text-slate-300 text-sm leading-relaxed">{build.talent_tips}</p>
                 </div>
               </div>
             </Card>
@@ -611,7 +636,7 @@ export const BuildDetail = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {build.runes.map((rune, index) => (
+            {(build.runes || []).map((rune, index) => (
               <Card key={index} className="p-5 group" glow={isHealer ? 'amber' : 'green'}>
                 <div className="flex items-start gap-4">
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>

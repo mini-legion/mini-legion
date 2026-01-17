@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, Badge, DropItem } from '../components/UI';
-import { dummyRaids, raidsSubcategories } from '../data/raidsData';
+import { useRaid } from '../lib/hooks';
+import { raidsSubcategories, storage } from '../lib/api';
 
 export const RaidDetail = () => {
   const { raidId } = useParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const raid = dummyRaids.find(r => r.id === raidId);
+  const { data: raid, loading, error } = useRaid(raidId || '');
   const [activeSubRaidId, setActiveSubRaidId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -14,8 +15,34 @@ export const RaidDetail = () => {
       setActiveSubRaidId(raid.subraids[0].id);
     }
   }, [raidId, raid]);
-  
+
   const subcategory = raidsSubcategories.find(s => s.id === raid?.subcategory);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😕</div>
+          <h2 className="text-2xl font-bold text-slate-200 mb-2">Error Loading Raid</h2>
+          <p className="text-slate-400 mb-6">Please try again later.</p>
+          <Link
+            to="/raids"
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+          >
+            Back to Raids
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!raid) {
     return (
@@ -24,8 +51,8 @@ export const RaidDetail = () => {
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-2xl font-bold text-slate-200 mb-2">Raid Not Found</h2>
           <p className="text-slate-400 mb-6">The raid you're looking for doesn't exist.</p>
-          <Link 
-            to="/raids" 
+          <Link
+            to="/raids"
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all"
           >
             Back to Raids
@@ -40,8 +67,8 @@ export const RaidDetail = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-slate-900 border-b border-slate-800">
         <div className="absolute inset-0">
-          <img 
-            src={raid.image} 
+          <img
+            src={storage.getUrl(raid.image) || undefined}
             alt={raid.name}
             className="w-full h-full object-cover opacity-20 blur-sm"
           />
@@ -66,7 +93,7 @@ export const RaidDetail = () => {
           <div className="pb-12">
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Badge variant="danger" size="md">{raid.difficulty}</Badge>
-              <Badge variant="info" size="md">Min Lvl: {raid.minLevel}</Badge>
+              <Badge variant="info" size="md">Min Lvl: {raid.min_level}</Badge>
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">
               {raid.name}
@@ -139,17 +166,17 @@ export const RaidDetail = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-12">
-              {subraid.bosses.map((boss, bossIdx) => (
+              {(subraid.bosses || []).map((boss, bossIdx) => (
                 <div key={bossIdx} className="space-y-6">
                   <div className="flex flex-col md:flex-row md:items-center gap-6">
                     <div className="flex items-center gap-6">
                       {boss.image ? (
                         <div className="relative group/boss">
-                          <img 
-                            src={boss.image} 
+                          <img
+                            src={storage.getUrl(boss.image) || ''}
                             alt={boss.name}
                             className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-2xl border-2 border-slate-700/50 shadow-xl cursor-zoom-in hover:scale-105 hover:border-purple-500/50 transition-all shrink-0"
-                            onClick={() => setSelectedImage(boss.image!)}
+                            onClick={() => setSelectedImage(storage.getUrl(boss.image) || null)}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-purple-500/10 opacity-0 group-hover/boss:opacity-100 transition-opacity pointer-events-none" />
                         </div>

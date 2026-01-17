@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { ImportantDrop } from '../../types';
+import { storage } from '../../lib/api';
 
 interface DropItemProps {
   drop: ImportantDrop;
@@ -46,8 +47,8 @@ export const DropItem: React.FC<DropItemProps> = ({ drop }) => {
             <div className="p-2 sm:p-4 flex flex-col items-center justify-start min-h-full w-full">
               {/* This inner div helps with centering while preserving the top of the image if it overflows */}
               <div className="flex-1 flex items-center justify-center w-full py-4">
-                <img 
-                  src={drop.image} 
+                <img
+                  src={storage.getUrl(drop.image) || ''}
                   alt={drop.name}
                   className="max-w-full h-auto object-contain block shadow-lg rounded-sm"
                   style={{ maxHeight: 'calc(95vh - 120px)' }}

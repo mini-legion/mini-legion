@@ -1,14 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, Badge } from "../components/UI";
-import {
-  homeStats,
-  featuredContent,
-  featuredBuilds,
-  dummyCodes,
-} from "../data";
-import hunterLogo from "../assets/classes/hunter-logo.png";
-import priestLogo from "../assets/classes/priest-logo.png";
-import mageLogo from "../assets/classes/mage-logo.png";
+import { useGuides, useBuilds, useCodes, useContentCreators } from "../lib/hooks";
+import { storage } from "../lib/api";
 
 const quickLinks = [
   {
@@ -42,7 +35,36 @@ const quickLinks = [
 ];
 
 export const Home = () => {
-  const activeCodes = dummyCodes.filter((c) => c.isActive);
+  const { data: guides } = useGuides();
+  const { data: builds } = useBuilds();
+  const { data: codes } = useCodes();
+  const { data: creators } = useContentCreators();
+
+  const activeCodes = codes?.filter((c) => c.is_active) || [];
+
+  // Calculate stats from fetched data
+  const homeStats = {
+    totalGuides: guides?.length || 0,
+    totalBuilds: builds?.length || 0,
+    activeCodes: activeCodes.length,
+    creators: creators?.length || 0,
+  };
+
+  // Featured content - first guide and specific builds
+  const featuredGuide = guides?.find(g => g.slug === 'afk-farming') || guides?.[0];
+  const featuredBuilds = builds?.filter(b =>
+    ['hunter-survival', 'priest-healing', 'fire-mage'].includes(b.id)
+  ).slice(0, 3) || [];
+
+  // Class icon URLs
+  const classIcons: Record<string, string> = {
+    hunter: storage.classes.getImageUrl('hunter-logo.png'),
+    priest: storage.classes.getImageUrl('priest-logo.png'),
+    mage: storage.classes.getImageUrl('mage-logo.png'),
+    warrior: storage.classes.getImageUrl('warrior-logo.png'),
+    rogue: storage.classes.getImageUrl('rogue-logo.png'),
+    paladin: storage.classes.getImageUrl('paladin-logo.png'),
+  };
 
   return (
     <div className="min-h-screen">
@@ -175,36 +197,38 @@ export const Home = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Featured Guide */}
-          <Link
-            to={`/guides/detail/${featuredContent.guide.id}`}
-            className="lg:col-span-2 group"
-          >
-            <Card className="overflow-hidden h-full" glow="amber">
-              <div className="aspect-video bg-gradient-to-br from-amber-500/20 to-slate-800 relative">
-                <img
-                  src={featuredContent.guide.image}
-                  alt={featuredContent.guide.title}
-                  className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <span className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-medium mb-3">
-                    Featured Guide
-                  </span>
-                  <h3 className="text-xl md:text-2xl font-bold text-slate-100 mb-2 group-hover:text-amber-400 transition-colors">
-                    {featuredContent.guide.title}
-                  </h3>
-                  <p className="text-slate-400 text-sm line-clamp-2">
-                    {featuredContent.guide.description}
-                  </p>
+          {featuredGuide && (
+            <Link
+              to={`/guides/detail/${featuredGuide.id}`}
+              className="lg:col-span-2 group"
+            >
+              <Card className="overflow-hidden h-full" glow="amber">
+                <div className="aspect-video bg-gradient-to-br from-amber-500/20 to-slate-800 relative">
+                  <img
+                    src={storage.getUrl(featuredGuide.image) || undefined}
+                    alt={featuredGuide.title}
+                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <span className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-medium mb-3">
+                      Featured Guide
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-100 mb-2 group-hover:text-amber-400 transition-colors">
+                      {featuredGuide.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm line-clamp-2">
+                      {featuredGuide.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
+          )}
 
           {/* Featured Builds */}
           <div className="flex flex-col gap-4">
-            {featuredBuilds.map((build, index) => (
+            {featuredBuilds.map((build) => (
               <Link
                 key={build.id}
                 to={`/builds/detail/${build.id}`}
@@ -214,33 +238,19 @@ export const Home = () => {
                   <div className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-20 flex items-center justify-center shrink-0">
-                        {index === 0 ? (
-                          <img
-                            src={hunterLogo}
-                            alt="Hunter"
-                            className="w-full h-full object-contain filter drop-shadow-lg"
-                          />
-                        ) : index === 1 ? (
-                          <img
-                            src={priestLogo}
-                            alt="Priest"
-                            className="w-full h-full object-contain filter drop-shadow-lg"
-                          />
-                        ) : (
-                          <img
-                            src={mageLogo}
-                            alt="Mage"
-                            className="w-full h-full object-contain filter drop-shadow-lg"
-                          />
-                        )}
+                        <img
+                          src={classIcons[build.hero_class.toLowerCase()] || classIcons.hunter}
+                          alt={build.hero_class}
+                          className="w-full h-full object-contain filter drop-shadow-lg"
+                        />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
                           <h3 className="text-sm font-bold text-slate-100 group-hover:text-amber-400 transition-colors">
-                            {build.heroClass} {build.spec}
+                            {build.hero_class} {build.spec}
                           </h3>
                           <Badge variant="info" size="sm">
-                            {build.contentType[0]}
+                            {Array.isArray(build.content_type) ? build.content_type[0] : build.content_type}
                           </Badge>
                         </div>
                         <p className="text-xs text-amber-500/80">

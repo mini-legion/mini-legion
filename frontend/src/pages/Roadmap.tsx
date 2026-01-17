@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { PageHeader, Card } from '../components/UI';
+import { storage } from '../lib/api';
 
 interface RoadmapImage {
   id: string;
@@ -14,25 +15,25 @@ const roadmaps: RoadmapImage[] = [
     id: '4',
     title: 'Roadmap 2026 - Divine & Dragon',
     date: 'January 2026',
-    image: '/roadmap/roadmap-4.png',
+    image: storage.roadmap.getImageUrl('roadmap-4.png'),
   },
   {
     id: '3',
     title: 'Roadmap 2025 - Christmas Update',
     date: 'December 2025',
-    image: '/roadmap/roadmap-3.png',
+    image: storage.roadmap.getImageUrl('roadmap-3.png'),
   },
   {
     id: '2',
     title: 'Roadmap 2025 - Late November',
     date: 'Late November 2025',
-    image: '/roadmap/roadmap-2.png',
+    image: storage.roadmap.getImageUrl('roadmap-2.png'),
   },
   {
     id: '1',
     title: 'Roadmap 2025 - Global Release',
     date: 'October - November 2025',
-    image: '/roadmap/roadmap-1.png',
+    image: storage.roadmap.getImageUrl('roadmap-1.png'),
   },
 ];
 
@@ -83,8 +84,8 @@ export const Roadmap = () => {
 
   return (
     <div>
-      <PageHeader 
-        title="Roadmap" 
+      <PageHeader
+        title="Roadmap"
         subtitle="Official development roadmaps for Mini Legion"
         gradient="blue"
       />
@@ -93,8 +94,8 @@ export const Roadmap = () => {
         {/* Roadmap Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {roadmaps.map((roadmap, index) => (
-            <Card 
-              key={roadmap.id} 
+            <Card
+              key={roadmap.id}
               className="overflow-hidden group cursor-pointer relative flex flex-col h-full border-slate-700/30 hover:border-blue-500/30 transition-all duration-500"
               glow={index === 0 ? 'amber' : 'none'}
               onClick={() => openLightbox(roadmap)}
@@ -110,8 +111,8 @@ export const Roadmap = () => {
 
               {/* Thumbnail Image Container */}
               <div className="relative aspect-[3/4] overflow-hidden bg-slate-950">
-                <img 
-                  src={roadmap.image} 
+                <img
+                  src={roadmap.image}
                   alt={roadmap.title}
                   className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
                   onError={(e) => {
@@ -125,10 +126,10 @@ export const Roadmap = () => {
                     `;
                   }}
                 />
-                
+
                 {/* Gradient Fade Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                
+
                 {/* View Icon */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
                   <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-2xl">
@@ -160,7 +161,7 @@ export const Roadmap = () => {
             <div>
               <h3 className="font-bold text-slate-200 text-sm">About the Roadmap</h3>
               <p className="text-slate-500 text-[12px] leading-relaxed">
-                These are the official development roadmaps released by the Mini Legion team. 
+                These are the official development roadmaps released by the Mini Legion team.
                 Content and estimated dates are subject to change.
               </p>
             </div>
@@ -170,7 +171,7 @@ export const Roadmap = () => {
 
       {/* Lightbox Modal with Zoom */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex flex-col bg-black/95"
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
@@ -181,10 +182,10 @@ export const Roadmap = () => {
               <div className="font-bold">{selectedImage.title}</div>
               <div className="text-sm text-slate-400">{selectedImage.date}</div>
             </div>
-            
+
             {/* Zoom Controls */}
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={handleZoomOut}
                 disabled={zoom <= 1}
                 className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white text-lg transition-all"
@@ -192,20 +193,20 @@ export const Roadmap = () => {
                 −
               </button>
               <span className="text-white text-sm w-16 text-center">{Math.round(zoom * 100)}%</span>
-              <button 
+              <button
                 onClick={handleZoomIn}
                 disabled={zoom >= 4}
                 className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white text-lg transition-all"
               >
                 +
               </button>
-              <button 
+              <button
                 onClick={handleResetZoom}
                 className="ml-2 px-3 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-sm transition-all"
               >
                 Reset
               </button>
-              <button 
+              <button
                 onClick={closeLightbox}
                 className="ml-4 w-10 h-10 rounded-lg bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-400 text-lg transition-all"
               >
@@ -213,9 +214,9 @@ export const Roadmap = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Image Container */}
-          <div 
+          <div
             className="flex-1 overflow-hidden flex items-center justify-center"
             style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
             onMouseDown={handleMouseDown}
@@ -227,9 +228,9 @@ export const Roadmap = () => {
               }
             }}
           >
-            <img 
+            <img
               ref={imageRef}
-              src={selectedImage.image} 
+              src={selectedImage.image}
               alt={selectedImage.title}
               className="max-w-full max-h-full object-contain select-none"
               style={{
