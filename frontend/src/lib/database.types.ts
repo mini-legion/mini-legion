@@ -41,17 +41,38 @@ export interface BuildRune {
 }
 
 export interface BuildGearGuide {
+  // Legacy format (for healer builds)
   dungeonStats?: { priority: string[]; description: string }
   adventureStats?: {
     armor: { priority: string[]; description: string }
     accessories: { priority: string[]; description: string }
   }
+  // New format (for DPS builds like Hunter Survival)
+  weapon?: {
+    title?: string
+    recommendation: string
+    note?: string
+  }
+  trinkets?: {
+    title?: string
+    recommendation: string
+    priority?: string[]
+  }
+  stats?: {
+    title?: string
+    expertise?: string
+    note?: string
+  }
 }
 
 export interface BuildRefinesGuide {
-  priority: string[]
-  details: { slot: string; stats: string[] }[]
+  priority?: string[]
+  // Legacy format (for healer builds)
+  details?: { slot: string; stats: string[] }[]
   tips?: string
+  // New format (for DPS builds like Hunter Survival)
+  notes?: string[]
+  tip?: string
 }
 
 export interface BuildSpellGuide {

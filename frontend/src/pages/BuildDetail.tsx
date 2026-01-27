@@ -375,8 +375,86 @@ export const BuildDetail = () => {
           </section>
         )}
 
-        {/* Refines Section (for healer builds) */}
-        {build.refines_guide && (build.refines_guide.priority?.length || build.refines_guide.details?.length) && (
+        {/* Gear Guide Section - New format with weapon, trinkets, stats */}
+        {build.gear_guide && (build.gear_guide.weapon || build.gear_guide.trinkets || build.gear_guide.stats) && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
+                ⚔️
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Gear Guide</h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Weapon */}
+              {build.gear_guide.weapon && (
+                <Card className="p-6" glow="amber">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-xl shadow-lg">
+                      🗡️
+                    </div>
+                    <h3 className="text-lg font-bold text-amber-400">{build.gear_guide.weapon.title || 'Weapon'}</h3>
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed mb-2">{build.gear_guide.weapon.recommendation}</p>
+                  {build.gear_guide.weapon.note && (
+                    <p className="text-slate-500 text-xs italic">{build.gear_guide.weapon.note}</p>
+                  )}
+                </Card>
+              )}
+
+              {/* Trinkets */}
+              {build.gear_guide.trinkets && (
+                <Card className="p-6" glow="purple">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-xl shadow-lg">
+                      💍
+                    </div>
+                    <h3 className="text-lg font-bold text-purple-400">{build.gear_guide.trinkets.title || 'Trinkets'}</h3>
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed mb-3">{build.gear_guide.trinkets.recommendation}</p>
+                  {build.gear_guide.trinkets.priority && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {build.gear_guide.trinkets.priority.map((stat: string, idx: number, arr: string[]) => (
+                        <span key={stat} className="contents">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                            idx === 0 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+                            idx === 1 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                            'bg-slate-700/50 text-slate-300 border-slate-600'
+                          }`}>{stat}</span>
+                          {idx < arr.length - 1 && <span className="text-slate-500 text-xs">&gt;</span>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              )}
+
+              {/* Stats */}
+              {build.gear_guide.stats && (
+                <Card className="p-6" glow="green">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-xl shadow-lg">
+                      📊
+                    </div>
+                    <h3 className="text-lg font-bold text-green-400">{build.gear_guide.stats.title || 'Important Stats'}</h3>
+                  </div>
+                  {build.gear_guide.stats.expertise && (
+                    <div className="mb-3">
+                      <span className="text-slate-400 text-sm">Expertise: </span>
+                      <span className="text-green-300 text-sm font-medium">{build.gear_guide.stats.expertise}</span>
+                    </div>
+                  )}
+                  {build.gear_guide.stats.note && (
+                    <p className="text-slate-500 text-xs italic">{build.gear_guide.stats.note}</p>
+                  )}
+                </Card>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Refines Section */}
+        {build.refines_guide && (build.refines_guide.priority?.length || build.refines_guide.details?.length || build.refines_guide.notes?.length) && (
           <section>
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
@@ -385,59 +463,80 @@ export const BuildDetail = () => {
               <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Refines Guide</h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={`grid grid-cols-1 ${build.refines_guide.details?.length ? 'lg:grid-cols-3' : build.refines_guide.notes?.length ? 'lg:grid-cols-2' : ''} gap-6`}>
               {/* Priority */}
-              <Card className="p-6" glow="amber">
-                <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm">⭐</span>
-                  Priority Order
-                </h3>
-                <div className="space-y-2">
-                  {(build.refines_guide.priority || []).map((stat, idx) => (
-                    <div key={stat} className="flex items-center gap-2">
-                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        idx < 2 ? 'bg-amber-500/30 text-amber-300' :
-                        idx < 4 ? 'bg-purple-500/30 text-purple-300' :
-                        'bg-slate-700 text-slate-400'
-                      }`}>{idx + 1}</span>
-                      <span className={`text-sm ${idx < 2 ? 'text-amber-300 font-semibold' : 'text-slate-300'}`}>{stat}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Slot Details */}
-              <Card className="p-6 lg:col-span-2" glow="purple">
-                <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm">🔧</span>
-                  Slot-Specific Refines
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {(build.refines_guide.details || []).map((detail) => (
-                    <div key={detail.slot} className={`p-3 rounded-lg ${colors.bg} border ${colors.border}`}>
-                      <h4 className="font-semibold text-slate-200 text-sm mb-2">{detail.slot}</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {(detail.stats || []).map((stat) => (
-                          <span key={stat} className={`px-2 py-0.5 rounded text-xs font-medium ${
-                            stat.includes('MUST') ? 'bg-red-500/30 text-red-300 border border-red-500/50' :
-                            'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          }`}>{stat}</span>
-                        ))}
+              {build.refines_guide.priority && build.refines_guide.priority.length > 0 && (
+                <Card className="p-6" glow="amber">
+                  <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm">⭐</span>
+                    Priority Order
+                  </h3>
+                  <div className="space-y-2">
+                    {(build.refines_guide.priority || []).map((stat, idx) => (
+                      <div key={stat} className="flex items-center gap-2">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          idx < 2 ? 'bg-amber-500/30 text-amber-300' :
+                          idx < 4 ? 'bg-purple-500/30 text-purple-300' :
+                          'bg-slate-700 text-slate-400'
+                        }`}>{idx + 1}</span>
+                        <span className={`text-sm ${idx < 2 ? 'text-amber-300 font-semibold' : 'text-slate-300'}`}>{stat}</span>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Slot Details (Legacy format) */}
+              {build.refines_guide.details && build.refines_guide.details.length > 0 && (
+                <Card className="p-6 lg:col-span-2" glow="purple">
+                  <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm">🔧</span>
+                    Slot-Specific Refines
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {(build.refines_guide.details || []).map((detail) => (
+                      <div key={detail.slot} className={`p-3 rounded-lg ${colors.bg} border ${colors.border}`}>
+                        <h4 className="font-semibold text-slate-200 text-sm mb-2">{detail.slot}</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {(detail.stats || []).map((stat) => (
+                            <span key={stat} className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              stat.includes('MUST') ? 'bg-red-500/30 text-red-300 border border-red-500/50' :
+                              'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            }`}>{stat}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Notes (New format) */}
+              {build.refines_guide.notes && build.refines_guide.notes.length > 0 && (
+                <Card className="p-6" glow="purple">
+                  <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm">📝</span>
+                    Important Notes
+                  </h3>
+                  <div className="space-y-3">
+                    {(build.refines_guide.notes || []).map((note, idx) => (
+                      <div key={idx} className={`p-3 rounded-lg ${colors.bg} border ${colors.border}`}>
+                        <p className="text-slate-300 text-sm leading-relaxed">{note}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
 
-            {/* Refine Tips */}
-            {build.refines_guide.tips && (
+            {/* Refine Tips (supports both 'tips' and 'tip') */}
+            {(build.refines_guide.tips || build.refines_guide.tip) && (
               <Card className="mt-6 p-5 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent" glow="green">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">💡</span>
                   <div>
                     <h4 className="font-bold text-cyan-400 mb-1">Pro Tip</h4>
-                    <p className="text-slate-300 text-sm leading-relaxed">{build.refines_guide.tips}</p>
+                    <p className="text-slate-300 text-sm leading-relaxed">{build.refines_guide.tips || build.refines_guide.tip}</p>
                   </div>
                 </div>
               </Card>
@@ -648,9 +747,13 @@ export const BuildDetail = () => {
             <Card className="p-5 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent" glow="green">
               <div className="flex items-start gap-3">
                 <span className="text-2xl">🎯</span>
-                <div>
-                  <h4 className="font-bold text-cyan-400 mb-1">Talent Tips</h4>
-                  <p className="text-slate-300 text-sm leading-relaxed">{build.talent_tips}</p>
+                <div className="flex-1">
+                  <h4 className="font-bold text-cyan-400 mb-3">Talent Tips</h4>
+                  <div className="space-y-3">
+                    {build.talent_tips.split('\n\n').map((paragraph, idx) => (
+                      <p key={idx} className="text-slate-300 text-sm leading-relaxed">{paragraph}</p>
+                    ))}
+                  </div>
                 </div>
               </div>
             </Card>
