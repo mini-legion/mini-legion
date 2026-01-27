@@ -51,11 +51,19 @@ export const Codes = () => {
 
   const allCodes = codes || [];
 
-  const filteredCodes = allCodes.filter(code => {
-    if (filter === 'active') return code.is_active;
-    if (filter === 'expired') return !code.is_active;
-    return true;
-  });
+  const filteredCodes = allCodes
+    .filter(code => {
+      if (filter === 'active') return code.is_active;
+      if (filter === 'expired') return !code.is_active;
+      return true;
+    })
+    .sort((a, b) => {
+      // Active codes first, then by date_added (newest first)
+      if (a.is_active !== b.is_active) {
+        return a.is_active ? -1 : 1;
+      }
+      return new Date(b.date_added).getTime() - new Date(a.date_added).getTime();
+    });
 
   const activeCodes = allCodes.filter(c => c.is_active).length;
 
