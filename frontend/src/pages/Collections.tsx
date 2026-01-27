@@ -5,6 +5,60 @@ import type { GearCollection } from "../lib/database.types";
 
 const STORAGE_KEY = "mini_legion_item_stars";
 
+// Type for merged items that can have multiple affixes
+interface MergedGearItem {
+  "Gear Collection Name": string;
+  "Drop Item Name": string | null;
+  "Location": string | null;
+  "Attribute 1": string | null;
+  "Attribute Value": number | null;
+  "Attribute 2": string | null;
+  "Attribute 2 Value": number | null;
+  affixes: {
+    name: string | null;
+    value: string | null;
+  }[];
+}
+
+// Merge items that have the same collection name, item name, and location
+const mergeItems = (items: GearCollection[]): MergedGearItem[] => {
+  const mergeMap = new Map<string, MergedGearItem>();
+
+  for (const item of items) {
+    const key = `${item["Drop Item Name"] || ""}::${item["Location"] || ""}`;
+
+    if (mergeMap.has(key)) {
+      // Add affix to existing merged item
+      const existing = mergeMap.get(key)!;
+      if (item["Affix"]) {
+        existing.affixes.push({
+          name: item["Affix"],
+          value: item["Affix Value"],
+        });
+      }
+    } else {
+      // Create new merged item
+      mergeMap.set(key, {
+        "Gear Collection Name": item["Gear Collection Name"],
+        "Drop Item Name": item["Drop Item Name"],
+        "Location": item["Location"],
+        "Attribute 1": item["Attribute 1"],
+        "Attribute Value": item["Attribute Value"],
+        "Attribute 2": item["Attribute 2"],
+        "Attribute 2 Value": item["Attribute 2 Value"],
+        affixes: item["Affix"] ? [{ name: item["Affix"], value: item["Affix Value"] }] : [],
+      });
+    }
+  }
+
+  return Array.from(mergeMap.values());
+};
+
+// Generate key for merged items (consistent key based on item identity)
+const getMergedItemKey = (item: MergedGearItem) => {
+  return `${item["Gear Collection Name"]}::${item["Drop Item Name"] || "unknown"}::${item["Location"] || ""}`;
+};
+
 // Hook para manejar el estado de estrellas con localStorage
 const useItemStars = () => {
   const [itemStars, setItemStars] = useState<Record<string, number>>(() => {
@@ -100,11 +154,6 @@ const StarRating = ({
   );
 };
 
-// Generar key única para cada item
-const getItemKey = (item: GearCollection, idx: number) => {
-  return `${item["Gear Collection Name"]}::${item["Drop Item Name"] || idx}::${item["Location"] || ""}`;
-};
-
 // Modal para detalles de colección
 const CollectionModal = ({
   collection,
@@ -121,11 +170,14 @@ const CollectionModal = ({
   setStars: (key: string, stars: number) => void;
   isCompleted: (key: string) => boolean;
 }) => {
-  const completed = items.filter((item, idx) =>
-    isCompleted(getItemKey(item, idx)),
+  // Merge items with multiple affixes into single entries
+  const mergedItems = mergeItems(items);
+
+  const completed = mergedItems.filter((item) =>
+    isCompleted(getMergedItemKey(item)),
   ).length;
-  const total = items.length;
-  const totalStars = items.reduce((sum, item, idx) => sum + getStars(getItemKey(item, idx)), 0);
+  const total = mergedItems.length;
+  const totalStars = mergedItems.reduce((sum, item) => sum + getStars(getMergedItemKey(item)), 0);
   const maxStars = total * 5;
   const progress = Math.round((totalStars / maxStars) * 100);
 
@@ -195,8 +247,8 @@ const CollectionModal = ({
 
         {/* Items list */}
         <div className="overflow-y-auto max-h-[calc(85vh-120px)] p-4 space-y-2">
-          {items.map((item, idx) => {
-            const itemKey = getItemKey(item, idx);
+          {mergedItems.map((item) => {
+            const itemKey = getMergedItemKey(item);
             const stars = getStars(itemKey);
             const itemIsCompleted = stars >= 5;
             return (
@@ -239,16 +291,17 @@ const CollectionModal = ({
 
                     {/* Attributes row */}
                     <div className="flex flex-wrap gap-2 mt-1.5">
-                      {item["Affix"] && (
-                        <span className="text-xs px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400">
-                          {item["Affix"]}
-                          {item["Affix Value"] && (
+                      {/* Show all affixes for merged items */}
+                      {item.affixes.map((affix, affixIdx) => (
+                        <span key={affixIdx} className="text-xs px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400">
+                          {affix.name}
+                          {affix.value && (
                             <span className="text-amber-300/70 ml-1">
-                              +{item["Affix Value"]}
+                              +{affix.value}
                             </span>
                           )}
                         </span>
-                      )}
+                      ))}
                       {item["Attribute 1"] && (
                         <span className="text-xs text-slate-400">
                           {item["Attribute 1"]}
@@ -297,11 +350,14 @@ const CollectionCard = ({
   getStars: (key: string) => number;
   isCompleted: (key: string) => boolean;
 }) => {
-  const completedItems = items.filter((item, idx) =>
-    isCompleted(getItemKey(item, idx)),
+  // Merge items to get accurate count
+  const mergedItems = mergeItems(items);
+
+  const completedItems = mergedItems.filter((item) =>
+    isCompleted(getMergedItemKey(item)),
   ).length;
-  const total = items.length;
-  const totalStars = items.reduce((sum, item, idx) => sum + getStars(getItemKey(item, idx)), 0);
+  const total = mergedItems.length;
+  const totalStars = mergedItems.reduce((sum, item) => sum + getStars(getMergedItemKey(item)), 0);
   const maxStars = total * 5;
   const progress = Math.round((totalStars / maxStars) * 100);
   const isComplete = completedItems === total;
@@ -395,6 +451,7 @@ export const Collections = () => {
   const { data: collections, loading, error } = useGearCollections();
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [attributeFilter, setAttributeFilter] = useState<string>("all");
+  const [affixFilter, setAffixFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCollection, setSelectedCollection] = useState<string | null>(
     null,
@@ -427,6 +484,13 @@ export const Collections = () => {
     return attr.replace(/\d+/g, "").trim();
   };
 
+  // Extraer nombre base del affix (sin números ni porcentajes)
+  const getAffixBase = (affix: string | null | undefined): string | null => {
+    if (!affix) return null;
+    // Eliminar números, puntos decimales, porcentajes y espacios extra
+    return affix.replace(/[\d.%]+/g, "").trim();
+  };
+
   const attributes = useMemo(() => {
     const allAttrs = allCollections.flatMap((c) => [
       getAttributeBase(c["Attribute 1"]),
@@ -434,6 +498,28 @@ export const Collections = () => {
     ]);
     return [...new Set(allAttrs.filter(Boolean))].sort() as string[];
   }, [allCollections]);
+
+  // Get unique affixes for filter (base names only)
+  const affixes = useMemo(() => {
+    const allAffixes = allCollections.map((c) => getAffixBase(c["Affix"])).filter(Boolean);
+    return [...new Set(allAffixes)].sort() as string[];
+  }, [allCollections]);
+
+  // Helper to get the stat value for sorting
+  const getStatValue = (collection: GearCollection, statName: string): number => {
+    // Check attributes
+    if (getAttributeBase(collection["Attribute 1"]) === statName) {
+      return collection["Attribute Value"] || 0;
+    }
+    if (getAttributeBase(collection["Attribute 2"]) === statName) {
+      return collection["Attribute 2 Value"] || 0;
+    }
+    // Check affix
+    if (getAffixBase(collection["Affix"]) === statName) {
+      return parseFloat(collection["Affix Value"] || "0") || 0;
+    }
+    return 0;
+  };
 
   // Group and filter collections
   const groupedCollections = useMemo(() => {
@@ -444,6 +530,8 @@ export const Collections = () => {
         attributeFilter === "all" ||
         getAttributeBase(collection["Attribute 1"]) === attributeFilter ||
         getAttributeBase(collection["Attribute 2"]) === attributeFilter;
+      const matchesAffix =
+        affixFilter === "all" || getAffixBase(collection["Affix"]) === affixFilter;
       const matchesSearch =
         searchTerm === "" ||
         collection["Gear Collection Name"]
@@ -453,10 +541,17 @@ export const Collections = () => {
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         collection["Affix"]?.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesLocation && matchesAttribute && matchesSearch;
+      return matchesLocation && matchesAttribute && matchesAffix && matchesSearch;
     });
 
-    return filtered.reduce(
+    // Sort by stat value if filtering by attribute or affix
+    const activeStatFilter = attributeFilter !== "all" ? attributeFilter : affixFilter !== "all" ? affixFilter : null;
+
+    const sortedFiltered = activeStatFilter
+      ? [...filtered].sort((a, b) => getStatValue(b, activeStatFilter) - getStatValue(a, activeStatFilter))
+      : filtered;
+
+    return sortedFiltered.reduce(
       (acc, collection) => {
         const name = collection["Gear Collection Name"];
         if (!acc[name]) {
@@ -467,39 +562,56 @@ export const Collections = () => {
       },
       {} as Record<string, GearCollection[]>,
     );
-  }, [allCollections, locationFilter, attributeFilter, searchTerm]);
+  }, [allCollections, locationFilter, attributeFilter, affixFilter, searchTerm]);
 
-  // Apply view mode filter
+  // Apply view mode filter and sort collections by stat value when filtering
   const displayedCollections = useMemo(() => {
-    return Object.entries(groupedCollections).filter(([, items]) => {
-      const completedItems = items.filter((item, idx) =>
-        isCompleted(getItemKey(item, idx)),
+    const filtered = Object.entries(groupedCollections).filter(([, items]) => {
+      const merged = mergeItems(items);
+      const completedItems = merged.filter((item) =>
+        isCompleted(getMergedItemKey(item)),
       ).length;
-      const isComplete = completedItems === items.length;
+      const isComplete = completedItems === merged.length;
 
       if (viewMode === "complete") return isComplete;
       if (viewMode === "incomplete") return !isComplete;
       return true;
     });
-  }, [groupedCollections, viewMode, isCompleted]);
 
-  // Stats
+    // Sort collections by max stat value when filtering by attribute or affix
+    const activeStatFilter = attributeFilter !== "all" ? attributeFilter : affixFilter !== "all" ? affixFilter : null;
+
+    if (activeStatFilter) {
+      return filtered.sort(([, itemsA], [, itemsB]) => {
+        const maxA = Math.max(...itemsA.map((item) => getStatValue(item, activeStatFilter)));
+        const maxB = Math.max(...itemsB.map((item) => getStatValue(item, activeStatFilter)));
+        return maxB - maxA;
+      });
+    }
+
+    return filtered;
+  }, [groupedCollections, viewMode, isCompleted, attributeFilter, affixFilter]);
+
+  // Stats - using merged items for accurate counts
   const stats = useMemo(() => {
-    const totalItems = allCollections.length;
-    const completedItems = allCollections.filter((c, idx) =>
-      isCompleted(getItemKey(c, idx)),
+    // Merge all items to get accurate total count
+    const allMergedItems = mergeItems(allCollections);
+    const totalItems = allMergedItems.length;
+    const completedItems = allMergedItems.filter((item) =>
+      isCompleted(getMergedItemKey(item)),
     ).length;
     const totalCollections = Object.keys(groupedCollections).length;
     const completeCollections = Object.values(groupedCollections).filter(
       (items) => {
-        const completed = items.filter((item, idx) =>
-          isCompleted(getItemKey(item, idx)),
+        const merged = mergeItems(items);
+        const completed = merged.filter((item) =>
+          isCompleted(getMergedItemKey(item)),
         ).length;
-        return completed === items.length;
+        return completed === merged.length;
       },
     ).length;
-    const currentTotalStars = allCollections.reduce(
-      (sum, c, idx) => sum + getStars(getItemKey(c, idx)),
+    const currentTotalStars = allMergedItems.reduce(
+      (sum, item) => sum + getStars(getMergedItemKey(item)),
       0,
     );
     const maxPossibleStars = totalItems * 5;
@@ -619,7 +731,7 @@ export const Collections = () => {
           </div>
 
           {/* Filter dropdowns */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-3 gap-2 mb-3">
             {/* Location filter */}
             <select
               value={locationFilter}
@@ -644,6 +756,20 @@ export const Collections = () => {
               {attributes.map((attr) => (
                 <option key={attr} value={attr}>
                   {attr}
+                </option>
+              ))}
+            </select>
+
+            {/* Affix filter */}
+            <select
+              value={affixFilter}
+              onChange={(e) => setAffixFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700 text-sm text-slate-300 focus:outline-none focus:border-purple-500/50 cursor-pointer"
+            >
+              <option value="all">All Affixes</option>
+              {affixes.map((affix) => (
+                <option key={affix} value={affix}>
+                  {affix}
                 </option>
               ))}
             </select>
