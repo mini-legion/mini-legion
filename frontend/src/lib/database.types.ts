@@ -25,8 +25,10 @@ export interface GuideSection {
 // Tipos de builds
 export interface BuildImages {
   skills?: string
+  skills2?: string
   tree1?: string
   tree2?: string
+  tree3?: string
   dungeonGear?: string
   adventureGear?: string
 }

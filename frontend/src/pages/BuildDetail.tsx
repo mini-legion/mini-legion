@@ -116,9 +116,24 @@ export const BuildDetail = () => {
             {/* Title & Info */}
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3 mb-3">
-                <Badge variant="tier-s" size="md">End Game Build</Badge>
-                <Badge variant="warning" size="md">Raid Ready</Badge>
-                <Badge variant="info" size="md">Mythic+</Badge>
+                {build.content_type && build.content_type.length > 0 ? (
+                  build.content_type.map((tag, idx) => (
+                    <Badge key={idx} variant={
+                      tag.toLowerCase().includes('leveling') ? 'info' :
+                      tag.toLowerCase().includes('early') ? 'warning' :
+                      tag.toLowerCase().includes('end game') ? 'tier-s' :
+                      tag.toLowerCase().includes('raid') ? 'warning' :
+                      tag.toLowerCase().includes('mythic') ? 'info' :
+                      'default'
+                    } size="md">{tag}</Badge>
+                  ))
+                ) : (
+                  <>
+                    <Badge variant="tier-s" size="md">End Game Build</Badge>
+                    <Badge variant="warning" size="md">Raid Ready</Badge>
+                    <Badge variant="info" size="md">Mythic+</Badge>
+                  </>
+                )}
                 {isHealer && <Badge variant="success" size="md">Healer</Badge>}
               </div>
               <h1 className={`text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent mb-3`}>
@@ -184,7 +199,7 @@ export const BuildDetail = () => {
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
                 ⚡
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Active Skills</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Active Skills & Runes</h2>
             </div>
             <Card className="overflow-hidden p-6" glow={isHealer ? 'amber' : 'green'}>
               <div className="flex justify-center">
@@ -578,7 +593,7 @@ export const BuildDetail = () => {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Talent Trees</h2>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 ${build.images.tree3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} gap-6`}>
               <Card className="overflow-hidden p-6" glow={isHealer ? 'amber' : 'green'}>
                 <h3 className={`text-lg font-bold ${colors.text} mb-4 flex items-center gap-2`}>
                   <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm font-mono">1</span>
@@ -607,6 +622,22 @@ export const BuildDetail = () => {
                   />
                 </div>
               </Card>
+              {build.images.tree3 && (
+                <Card className="overflow-hidden p-6" glow={isHealer ? 'amber' : 'green'}>
+                  <h3 className={`text-lg font-bold ${colors.text} mb-4 flex items-center gap-2`}>
+                    <span className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm font-mono">3</span>
+                    Tertiary Tree
+                  </h3>
+                  <div className="flex justify-center">
+                    <img
+                      src={storage.getUrl(build.images.tree3) || ''}
+                      alt="Tertiary Talent Tree"
+                      className="max-w-full h-auto rounded-xl border border-slate-700/50 shadow-xl cursor-zoom-in hover:scale-[1.01] transition-transform"
+                      onClick={() => setSelectedImage(storage.getUrl(build.images.tree3))}
+                    />
+                  </div>
+                </Card>
+              )}
             </div>
           </section>
         )}
@@ -626,35 +657,37 @@ export const BuildDetail = () => {
           </section>
         )}
 
-        {/* Runes Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
-              ✨
+        {/* Runes Section - Only show if build has runes */}
+        {build.runes && build.runes.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-xl`}>
+                ✨
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Recommended Runes Summary</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-slate-100">Recommended Runes Summary</h2>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(build.runes || []).map((rune, index) => (
-              <Card key={index} className="p-5 group" glow={isHealer ? 'amber' : 'green'}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
-                    {rune.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-slate-100 text-lg">{rune.skill}</h3>
-                      <span className="text-slate-500">–</span>
-                      <span className={`${colors.text} font-semibold`}>{rune.runeName}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(build.runes || []).map((rune, index) => (
+                <Card key={index} className="p-5 group" glow={isHealer ? 'amber' : 'green'}>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+                      {rune.icon}
                     </div>
-                    <p className="text-slate-400 text-sm leading-relaxed">{rune.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-slate-100 text-lg">{rune.skill}</h3>
+                        <span className="text-slate-500">–</span>
+                        <span className={`${colors.text} font-semibold`}>{rune.runeName}</span>
+                      </div>
+                      <p className="text-slate-400 text-sm leading-relaxed">{rune.description}</p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
 
         {/* Healer-specific final tips */}
