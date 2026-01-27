@@ -11,9 +11,10 @@ import {
   getRaidsBySubcategory,
   getCodes,
   getContentCreators,
-  getRoadmapItems
+  getRoadmapItems,
+  getGearCollections
 } from './api'
-import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem } from './database.types'
+import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem, GearCollection } from './database.types'
 
 // Generic hook for fetching data
 function useSupabaseQuery<T>(
@@ -134,4 +135,12 @@ export function useContentCreators() {
 
 export function useRoadmapItems() {
   return useSupabaseQuery<RoadmapItem[]>(getRoadmapItems)
+}
+
+// ============================================
+// GEAR COLLECTIONS HOOKS
+// ============================================
+
+export function useGearCollections() {
+  return useSupabaseQuery<GearCollection[]>(getGearCollections)
 }

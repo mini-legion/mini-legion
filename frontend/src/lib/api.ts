@@ -1,5 +1,5 @@
 import { supabase, getImageUrl } from './supabase'
-import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem } from './database.types'
+import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem, GearCollection } from './database.types'
 
 // ============================================
 // GUIDES API
@@ -214,6 +214,31 @@ export async function getRoadmapByStatus(status: 'planned' | 'in-progress' | 'co
 
   if (error) throw error
   return data as RoadmapItem[]
+}
+
+// ============================================
+// GEAR COLLECTIONS API
+// ============================================
+
+export async function getGearCollections() {
+  const { data, error } = await supabase
+    .from('collections')
+    .select('*')
+    .order('Gear Collection Name', { ascending: true })
+
+  if (error) throw error
+  return data as GearCollection[]
+}
+
+export async function getGearCollectionsByLocation(location: string) {
+  const { data, error } = await supabase
+    .from('collections')
+    .select('*')
+    .eq('Location', location)
+    .order('Gear Collection Name', { ascending: true })
+
+  if (error) throw error
+  return data as GearCollection[]
 }
 
 // ============================================

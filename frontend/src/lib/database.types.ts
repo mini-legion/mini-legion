@@ -481,3 +481,22 @@ export type Code = Database['public']['Tables']['codes']['Row']
 export type CodeInsert = Database['public']['Tables']['codes']['Insert']
 export type ContentCreator = Database['public']['Tables']['content_creators']['Row']
 export type RoadmapItem = Database['public']['Tables']['roadmap_items']['Row']
+
+// Gear Collection type (matches CSV import column names)
+export interface GearCollection {
+  'Collection Status': string
+  'Gear Collection Name': string
+  'Drop Item Name': string | null
+  'Location': string | null
+  'Affix': string | null
+  'Attribute 1': string | null
+  'Attribute 2': string | null
+  'Affix Type': string | null
+  'Affix Value': string | null
+  'Upstar Item': string | null
+  'Attribute Type': string | null
+  'Attribute Value': number | null
+  'Attribute 2 Type': string | null
+  'Attribute 2 Value': number | null
+  'Upgrade Item': string | null
+}

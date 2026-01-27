@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home, Guides, GuideDetail, Builds, BuildDetail, Raids, RaidDetail, Roadmap, Codes, ContentCreators } from './pages';
+import { Home, Guides, GuideDetail, Builds, BuildDetail, Collections, Raids, RaidDetail, Roadmap, Codes, ContentCreators } from './pages';
 import ScrollToTop from './components/ScrollToTop';
 
 function App() {
@@ -16,6 +16,7 @@ function App() {
           <Route path="builds" element={<Builds />} />
           <Route path="builds/:subcategory" element={<Builds />} />
           <Route path="builds/detail/:buildId" element={<BuildDetail />} />
+          <Route path="collections" element={<Collections />} />
           <Route path="raids" element={<Raids />} />
           <Route path="raids/:subcategory" element={<Raids />} />
           <Route path="raids/detail/:raidId" element={<RaidDetail />} />
