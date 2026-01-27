@@ -1,5 +1,158 @@
+import { useRef } from 'react';
 import { PageHeader, Card, Badge } from '../components/UI';
-import { useContentCreators } from '../lib/hooks';
+import { useContentCreators, useYouTubeVideos } from '../lib/hooks';
+import { formatRelativeDate } from '../lib/youtube';
+import type { ContentCreator } from '../lib/database.types';
+
+// YouTube Videos Swiper Component
+const YouTubeVideosSwiper = ({ creators }: { creators: ContentCreator[] }) => {
+  // Get all YouTube creators with channel IDs
+  const youtubeCreators = creators.filter(c => c.platform === 'YouTube' && c.youtube_channel_id);
+
+  if (youtubeCreators.length === 0) return null;
+
+  return (
+    <div className="mb-16">
+      <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-2">
+        <span className="text-red-500">📺</span> Latest Videos
+      </h2>
+
+      {youtubeCreators.map((creator) => (
+        <CreatorVideos key={creator.id} creator={creator} />
+      ))}
+    </div>
+  );
+};
+
+const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { data: videos, loading } = useYouTubeVideos(creator.youtube_channel_id, 6);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 400;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <img
+            src={creator.avatar || 'https://placehold.co/40x40/1F2937/FFFFFF?text=?'}
+            alt={creator.name}
+            className="w-10 h-10 rounded-full object-cover border-2 border-slate-700"
+          />
+          <div>
+            <h3 className="text-lg font-semibold text-slate-200">{creator.name}</h3>
+            <p className="text-sm text-slate-500">Loading videos...</p>
+          </div>
+        </div>
+        <div className="flex gap-4 overflow-hidden">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex-shrink-0 w-72 aspect-video bg-slate-800 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (videos.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      {/* Creator Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <a
+          href={creator.url || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 group"
+        >
+          <img
+            src={creator.avatar || 'https://placehold.co/40x40/1F2937/FFFFFF?text=?'}
+            alt={creator.name}
+            className="w-10 h-10 rounded-full object-cover border-2 border-slate-700 group-hover:border-red-500/50 transition-colors"
+          />
+          <div>
+            <h3 className="text-lg font-semibold text-slate-200 group-hover:text-red-400 transition-colors">
+              {creator.name}
+            </h3>
+            <p className="text-sm text-slate-500">{creator.followers}</p>
+          </div>
+        </a>
+      </div>
+
+      {/* Videos Swiper */}
+      <div className="relative group/swiper">
+        {/* Left Arrow */}
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition-all opacity-0 group-hover/swiper:opacity-100 -translate-x-1/2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Right Arrow */}
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition-all opacity-0 group-hover/swiper:opacity-100 translate-x-1/2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Videos Container */}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {videos.map((video) => (
+            <a
+              key={video.id}
+              href={video.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/video flex-shrink-0 w-72"
+            >
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-800 border border-slate-700/50 group-hover/video:border-red-500/30 transition-colors">
+                <img
+                  src={video.thumbnail}
+                  alt={video.title}
+                  className="w-full h-full object-cover group-hover/video:scale-105 transition-transform duration-300"
+                />
+                {/* Play Button Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/video:bg-black/30 transition-colors">
+                  <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center opacity-0 group-hover/video:opacity-100 scale-75 group-hover/video:scale-100 transition-all">
+                    <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+                {/* Gradient Overlay */}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+              </div>
+              <div className="mt-3">
+                <h4 className="text-sm font-medium text-slate-200 line-clamp-2 group-hover/video:text-red-400 transition-colors">
+                  {video.title}
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">{formatRelativeDate(video.published)}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const getPlatformStyles = (platform: string) => {
   switch (platform) {
@@ -70,6 +223,9 @@ export const ContentCreators = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {/* YouTube Videos Swiper - Now at the top! */}
+        <YouTubeVideosSwiper creators={allCreators} />
+
         {/* Featured Creators */}
         {featuredCreators.length > 0 && (
           <div className="mb-16">

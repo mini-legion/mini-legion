@@ -412,6 +412,7 @@ export interface Database {
           description: string | null
           url: string | null
           featured: boolean
+          youtube_channel_id: string | null
           created_at: string
         }
         Insert: {
@@ -423,6 +424,7 @@ export interface Database {
           description?: string | null
           url?: string | null
           featured?: boolean
+          youtube_channel_id?: string | null
           created_at?: string
         }
         Update: {
@@ -434,6 +436,7 @@ export interface Database {
           description?: string | null
           url?: string | null
           featured?: boolean
+          youtube_channel_id?: string | null
           created_at?: string
         }
       }

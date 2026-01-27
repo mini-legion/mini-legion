@@ -15,6 +15,7 @@ import {
   getGearCollections
 } from './api'
 import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem, GearCollection } from './database.types'
+import { fetchYouTubeVideos, type YouTubeVideo } from './youtube'
 
 // Generic hook for fetching data
 function useSupabaseQuery<T>(
@@ -143,4 +144,48 @@ export function useRoadmapItems() {
 
 export function useGearCollections() {
   return useSupabaseQuery<GearCollection[]>(getGearCollections)
+}
+
+// ============================================
+// YOUTUBE VIDEOS HOOKS
+// ============================================
+
+export function useYouTubeVideos(channelId: string | null, maxResults: number = 3) {
+  const [data, setData] = useState<YouTubeVideo[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!channelId) {
+      setData([])
+      return
+    }
+
+    let isMounted = true
+    setLoading(true)
+
+    fetchYouTubeVideos(channelId, maxResults)
+      .then((videos) => {
+        if (isMounted) {
+          setData(videos)
+          setError(null)
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err)
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [channelId, maxResults])
+
+  return { data, loading, error }
 }
