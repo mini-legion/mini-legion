@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { PageHeader, Card } from '../components/UI';
-import { storage } from '../lib/api';
 import { useRoadmapItems } from '../lib/hooks';
 
 interface RoadmapDisplay {
@@ -21,11 +20,12 @@ export const Roadmap = () => {
   const { data: roadmapItems, loading, error } = useRoadmapItems();
 
   // Transform DB data to display format
+  // Roadmap images served locally to reduce Supabase egress
   const roadmaps: RoadmapDisplay[] = (roadmapItems || []).map((item) => ({
     id: item.id,
     title: item.title,
     date: formatRoadmapDate(item.date),
-    image: storage.roadmap.getImageUrl(`roadmap-${item.id}.png`),
+    image: `/images/roadmap/roadmap-${item.id}.png`,
   }));
   const [selectedImage, setSelectedImage] = useState<RoadmapDisplay | null>(null);
   const [zoom, setZoom] = useState(1);

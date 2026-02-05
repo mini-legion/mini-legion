@@ -1,4 +1,4 @@
-import { supabase, getImageUrl } from './supabase'
+import { supabase } from './supabase'
 import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem, GearCollection } from './database.types'
 
 // ============================================
@@ -242,36 +242,36 @@ export async function getGearCollectionsByLocation(location: string) {
 }
 
 // ============================================
-// STORAGE HELPERS
+// STORAGE HELPERS - All images served locally to reduce Supabase egress
 // ============================================
 
 export const storage = {
   // Generic helper for paths stored in DB (e.g., "guides/afk/afk-guide1.png")
-  getUrl: (path: string | null | undefined) => path ? getImageUrl('images', path) : null,
+  getUrl: (path: string | null | undefined) => path ? `/images/${path}` : null,
 
   guides: {
-    getImageUrl: (path: string) => getImageUrl('images', `guides/${path}`),
+    getImageUrl: (path: string) => `/images/guides/${path}`,
   },
   builds: {
-    getImageUrl: (path: string) => getImageUrl('images', `builds/${path}`),
+    getImageUrl: (path: string) => `/images/builds/${path}`,
   },
   raids: {
-    getImageUrl: (path: string) => getImageUrl('images', `raids/${path}`),
+    getImageUrl: (path: string) => `/images/raids/${path}`,
   },
   creators: {
-    getImageUrl: (path: string) => getImageUrl('images', `creators/${path}`),
+    getImageUrl: (path: string) => `/images/creators/${path}`,
   },
   items: {
-    getImageUrl: (path: string) => getImageUrl('images', `items/${path}`),
+    getImageUrl: (path: string) => `/images/items/${path}`,
   },
   bosses: {
-    getImageUrl: (path: string) => getImageUrl('images', `bosses/${path}`),
+    getImageUrl: (path: string) => `/images/bosses/${path}`,
   },
   classes: {
-    getImageUrl: (path: string) => getImageUrl('images', `classes/${path}`),
+    getImageUrl: (path: string) => `/images/classes/${path}`,
   },
   roadmap: {
-    getImageUrl: (path: string) => getImageUrl('images', `roadmap/${path}`),
+    getImageUrl: (path: string) => `/images/roadmap/${path}`,
   },
 }
 
