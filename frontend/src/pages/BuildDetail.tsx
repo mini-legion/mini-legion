@@ -62,13 +62,14 @@ export const BuildDetail = () => {
     paladin: { gradient: 'from-pink-400 to-rose-500', bg: 'bg-pink-500/10', border: 'border-pink-500/30', text: 'text-pink-400' },
   };
 
+  // Class logos served locally to reduce Supabase egress
   const classIcons: Record<string, string> = {
-    hunter: storage.classes.getImageUrl('hunter-logo.png'),
-    priest: storage.classes.getImageUrl('priest-logo.png'),
-    mage: storage.classes.getImageUrl('mage-logo.png'),
-    warrior: storage.classes.getImageUrl('warrior-logo.png'),
-    rogue: storage.classes.getImageUrl('rogue-logo.png'),
-    paladin: storage.classes.getImageUrl('paladin-logo.png'),
+    hunter: '/images/classes/hunter-logo.png',
+    priest: '/images/classes/priest-logo.png',
+    mage: '/images/classes/mage-logo.png',
+    warrior: '/images/classes/warrior-logo.png',
+    rogue: '/images/classes/rogue-logo.png',
+    paladin: '/images/classes/paladin-logo.png',
   };
 
   const colors = classColors[build.hero_class.toLowerCase()] || classColors.hunter;

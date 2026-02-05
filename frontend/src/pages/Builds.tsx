@@ -3,13 +3,15 @@ import { PageHeader, Badge, Card } from "../components/UI";
 import { useBuilds, useBuildsByClass } from "../lib/hooks";
 import { buildsSubcategories, storage } from "../lib/api";
 
+// Class logos served locally to reduce Supabase egress
+
 const classColors: Record<string, { gradient: string; icon: string }> = {
-  hunter: { gradient: "from-green-500 to-emerald-600", icon: storage.classes.getImageUrl("hunter-logo.png") },
-  priest: { gradient: "from-amber-200 to-amber-400", icon: storage.classes.getImageUrl("priest-logo.png") },
-  mage: { gradient: "from-cyan-400 to-blue-500", icon: storage.classes.getImageUrl("mage-logo.png") },
-  warrior: { gradient: "from-amber-600 to-orange-700", icon: storage.classes.getImageUrl("warrior-logo.png") },
-  rogue: { gradient: "from-yellow-400 to-amber-500", icon: storage.classes.getImageUrl("rogue-logo.png") },
-  paladin: { gradient: "from-pink-400 to-rose-500", icon: storage.classes.getImageUrl("paladin-logo.png") },
+  hunter: { gradient: "from-green-500 to-emerald-600", icon: "/images/classes/hunter-logo.png" },
+  priest: { gradient: "from-amber-200 to-amber-400", icon: "/images/classes/priest-logo.png" },
+  mage: { gradient: "from-cyan-400 to-blue-500", icon: "/images/classes/mage-logo.png" },
+  warrior: { gradient: "from-amber-600 to-orange-700", icon: "/images/classes/warrior-logo.png" },
+  rogue: { gradient: "from-yellow-400 to-amber-500", icon: "/images/classes/rogue-logo.png" },
+  paladin: { gradient: "from-pink-400 to-rose-500", icon: "/images/classes/paladin-logo.png" },
 };
 
 const LoadingState = () => (

@@ -295,12 +295,11 @@ export const buildsSubcategories = [
   { id: 'paladin', name: 'Paladin', icon: '⚜️', description: 'Holy warrior builds' },
 ]
 
-const STORAGE_BASE = 'https://mmjplyofgdpaqajaxjbc.supabase.co/storage/v1/object/public/images'
-
+// Raid icons served locally to reduce Supabase egress
 export const raidsSubcategories = [
-  { id: 'normal', name: 'Normal', icon: `${STORAGE_BASE}/raids/normal.png`, description: 'Standard events designed to be completed solo with a single character.', itemCount: 11 },
-  { id: 'heroic', name: 'Heroic', icon: `${STORAGE_BASE}/raids/heroic.png`, description: 'Challenging events you can tackle solo with your 5 characters or team up with other players to complete.', itemCount: 17 },
-  { id: 'raid', name: 'Raid', icon: `${STORAGE_BASE}/raids/raid.png`, description: 'Epic 25-player cooperative encounters. The first tier of end-game content where team coordination is essential.', itemCount: 2 },
-  { id: 'abyss', name: 'Abyss', icon: `${STORAGE_BASE}/raids/abyss.png`, description: 'Elite 25-player events featuring enhanced raid encounters with significantly higher difficulty and superior rewards.', itemCount: 0 },
-  { id: 'mythic', name: 'Mythic+', icon: `${STORAGE_BASE}/raids/mythic.png`, description: 'The ultimate high-end challenge. A 5-player multi-floor dungeon experience designed for the most coordinated squads.', itemCount: 0 },
+  { id: 'normal', name: 'Normal', icon: '/images/raids/normal.png', description: 'Standard events designed to be completed solo with a single character.', itemCount: 11 },
+  { id: 'heroic', name: 'Heroic', icon: '/images/raids/heroic.png', description: 'Challenging events you can tackle solo with your 5 characters or team up with other players to complete.', itemCount: 17 },
+  { id: 'raid', name: 'Raid', icon: '/images/raids/raid.png', description: 'Epic 25-player cooperative encounters. The first tier of end-game content where team coordination is essential.', itemCount: 2 },
+  { id: 'abyss', name: 'Abyss', icon: '/images/raids/abyss.png', description: 'Elite 25-player events featuring enhanced raid encounters with significantly higher difficulty and superior rewards.', itemCount: 0 },
+  { id: 'mythic', name: 'Mythic+', icon: '/images/raids/mythic.png', description: 'The ultimate high-end challenge. A 5-player multi-floor dungeon experience designed for the most coordinated squads.', itemCount: 0 },
 ]
