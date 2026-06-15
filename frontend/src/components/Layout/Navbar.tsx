@@ -14,6 +14,9 @@ const navItems = [
   { name: "Creators", path: "/creators", icon: "🎬" },
 ];
 
+const creditLink = "https://x.com/Vegetarox";
+const creditName = "Vegetarox";
+
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -68,12 +71,12 @@ export const Navbar = () => {
               <span className="text-slate-400 text-sm">
                 Made by:{" "}
                 <a
-                  href="https://www.linkedin.com/in/matias-ippoliti/"
+                  href={creditLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline"
                 >
-                  ByPass
+                  {creditName}
                 </a>
               </span>
             </div>
@@ -128,12 +131,12 @@ export const Navbar = () => {
               <span className="text-slate-400 text-sm">
                 Made by:{" "}
                 <a
-                  href="https://www.linkedin.com/in/matias-ippoliti/"
+                  href={creditLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline"
                 >
-                  ByPass
+                  {creditName}
                 </a>
               </span>
             </div>
