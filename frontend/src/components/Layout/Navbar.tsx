@@ -6,6 +6,7 @@ const navItems = [
   { name: "Home", path: "/", icon: "🏠" },
   { name: "Guides", path: "/guides", icon: "📚" },
   { name: "Builds", path: "/builds", icon: "⚔️" },
+  { name: "Druid", path: "/druid", icon: "🌿" },
   { name: "Collections", path: "/collections", icon: "🎒" },
   { name: "Raids", path: "/raids", icon: "🐉" },
   { name: "Roadmap", path: "/roadmap", icon: "🗺️" },
