@@ -3,6 +3,8 @@ export { Guides } from './Guides';
 export { GuideDetail } from './GuideDetail';
 export { Builds } from './Builds';
 export { BuildDetail } from './BuildDetail';
+export { BuildSubmit } from './BuildSubmit';
+export { Ranking } from './Ranking';
 export { Collections } from './Collections';
 export { Raids } from './Raids';
 export { RaidDetail } from './RaidDetail';
