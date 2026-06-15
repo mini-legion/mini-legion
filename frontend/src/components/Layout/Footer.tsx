@@ -100,7 +100,7 @@ export const Footer = () => {
         <div className="mt-12 pt-8 border-t border-slate-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm">
-              © 2026 Mini Legion Guide. Not affiliated with the official game.
+              © 2026 Mini Legion Guide. Community-powered and not affiliated with the official game.
             </p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-slate-500 hover:text-amber-400 text-sm transition-colors">
@@ -116,4 +116,3 @@ export const Footer = () => {
     </footer>
   );
 };
-
