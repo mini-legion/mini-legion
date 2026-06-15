@@ -9,7 +9,6 @@ export const Footer = () => {
     <footer className="bg-gradient-to-b from-slate-900 to-slate-950 border-t border-amber-500/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-amber-500/20 overflow-hidden border border-amber-500/20">
@@ -26,7 +25,6 @@ export const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h4 className="text-amber-400 font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
             <ul className="space-y-2">
@@ -43,24 +41,27 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Resources */}
           <div>
             <h4 className="text-amber-400 font-semibold mb-4 text-sm uppercase tracking-wider">Resources</h4>
             <ul className="space-y-2">
-              {['Roadmap', 'Codes', 'Creators'].map((item) => (
-                <li key={item}>
+              {[
+                { name: 'Druid Hub', path: '/druid' },
+                { name: 'Roadmap', path: '/roadmap' },
+                { name: 'Codes', path: '/codes' },
+                { name: 'Creators', path: '/creators' },
+              ].map((item) => (
+                <li key={item.name}>
                   <Link
-                    to={`/${item.toLowerCase().replace(' ', '-')}`}
+                    to={item.path}
                     className="text-slate-400 hover:text-amber-400 text-sm transition-colors duration-200"
                   >
-                    {item}
+                    {item.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Community */}
           <div>
             <h4 className="text-amber-400 font-semibold mb-4 text-sm uppercase tracking-wider">Community</h4>
             <div className="flex gap-3">
@@ -79,10 +80,10 @@ export const Footer = () => {
                   title={social.name}
                 >
                   {social.image ? (
-                    <img 
-                      src={social.image} 
-                      alt={social.name} 
-                      className={`w-full h-full object-contain ${social.scale || ''}`} 
+                    <img
+                      src={social.image}
+                      alt={social.name}
+                      className={`w-full h-full object-contain ${social.scale || ''}`}
                     />
                   ) : (
                     social.icon
@@ -96,7 +97,6 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-slate-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm">
