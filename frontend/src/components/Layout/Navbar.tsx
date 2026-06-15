@@ -7,6 +7,7 @@ const navItems = [
   { name: "Guides", path: "/guides", icon: "📚" },
   { name: "Builds", path: "/builds", icon: "⚔️" },
   { name: "Druid", path: "/druid", icon: "🌿" },
+  { name: "Ranking", path: "/ranking", icon: "🏆" },
   { name: "Collections", path: "/collections", icon: "🎒" },
   { name: "Raids", path: "/raids", icon: "🐉" },
   { name: "Roadmap", path: "/roadmap", icon: "🗺️" },
@@ -54,7 +55,7 @@ export const Navbar = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                     isActive(item.path)
                       ? "bg-amber-500/20 text-amber-400 shadow-lg shadow-amber-500/10"
                       : "text-slate-300 hover:text-amber-400 hover:bg-slate-700/50"
@@ -122,7 +123,7 @@ export const Navbar = () => {
         {/* Mobile Menu */}
         <div
           className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+            isMobileMenuOpen ? "max-h-[620px] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
           <div className="px-4 py-4 bg-slate-900/95 border-t border-slate-700/50">
