@@ -122,6 +122,49 @@ export const Home = () => {
         </div>
       </section>
 
+      {/* Active Development / Druid Teaser */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="p-6 border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-slate-900/70 to-slate-950" glow="amber">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-2xl shrink-0">
+                🛠️
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3">
+                  Active Maintenance
+                </div>
+                <h2 className="text-xl md:text-2xl font-black text-slate-100 mb-2">
+                  Mini Legion Guide is being actively updated
+                </h2>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  The site is now under active development. Guides, builds, raid information, codes, and new player tools are being reviewed, cleaned up, and expanded for the community.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-slate-900/70 to-slate-950" glow="green">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl shrink-0">
+                🌿
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-3">
+                  Druid Update Preparation
+                </div>
+                <h2 className="text-xl md:text-2xl font-black text-slate-100 mb-2">
+                  Dedicated Druid coverage is being prepared
+                </h2>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  A Druid guide hub is planned with builds, progression notes, and update coverage as soon as reliable information is available. More details will be added after the update is confirmed.
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
