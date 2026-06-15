@@ -3,6 +3,7 @@ import logo from '../../assets/logo-minilegion.png';
 import discordIcon from '../../assets/discord.png';
 import googlePlayIcon from '../../assets/Google-play.png';
 import appStoreIcon from '../../assets/app-store.png';
+import { SupportProject } from '../SupportProject';
 
 export const Footer = () => {
   return (
@@ -46,6 +47,8 @@ export const Footer = () => {
             <ul className="space-y-2">
               {[
                 { name: 'Druid Hub', path: '/druid' },
+                { name: 'Ranking', path: '/ranking' },
+                { name: 'Submit Build', path: '/builds/submit' },
                 { name: 'Roadmap', path: '/roadmap' },
                 { name: 'Codes', path: '/codes' },
                 { name: 'Creators', path: '/creators' },
@@ -91,9 +94,10 @@ export const Footer = () => {
                 </a>
               ))}
             </div>
-            <p className="text-slate-500 text-xs mt-4">
+            <p className="text-slate-500 text-xs mt-4 mb-4">
               Join our community for updates, discussions, and exclusive content.
             </p>
+            <SupportProject compact />
           </div>
         </div>
 
