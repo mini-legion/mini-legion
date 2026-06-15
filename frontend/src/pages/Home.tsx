@@ -19,7 +19,7 @@ const quickLinks = [
     color: "from-red-500 to-rose-500",
   },
   {
-    name: "Raids",
+    name: "RaidsTEST",
     path: "/raids",
     icon: "🐉",
     description: "Conquer challenging content",
