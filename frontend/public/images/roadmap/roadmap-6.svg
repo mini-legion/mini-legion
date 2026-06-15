@@ -1,0 +1,156 @@
+<svg width="560" height="2048" viewBox="0 0 560 2048" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .font{font-family:Arial, Helvetica, sans-serif}.h{font-weight:900;fill:#1f2937}.w{font-weight:900;fill:#ffffff}.b{font-weight:800}.t{font-size:14px;fill:#1f2937}.s{font-size:12px;fill:#374151}.muted{fill:#6b7280}.orange{fill:#ef5b3d}.green{fill:#22a861}.blue{fill:#2563eb}.yellow{fill:#facc15}.pink{fill:#ec4899}.brown{fill:#7c3f00}
+    </style>
+  </defs>
+  <rect width="560" height="2048" fill="#f8fafc"/>
+
+  <rect x="16" y="16" width="528" height="44" rx="4" fill="#fff7db" stroke="#64748b" stroke-width="1.5"/>
+  <circle cx="112" cy="38" r="18" fill="#f97316" stroke="#b45309" stroke-width="2"/>
+  <text x="112" y="44" text-anchor="middle" class="font w" font-size="12">ML</text>
+  <text x="140" y="46" class="font h" font-size="22">&lt;Mini Legion&gt; Roadmap 2026</text>
+
+  <rect x="16" y="68" width="528" height="32" rx="4" fill="#9ee6b6"/>
+  <text x="280" y="90" text-anchor="middle" class="font b muted" font-size="16">&gt;&gt;Feral Balance&lt;&lt;</text>
+
+  <rect x="16" y="104" width="52" height="482" rx="4" fill="#ef6746"/>
+  <text x="42" y="344" text-anchor="middle" class="font w" font-size="17">This</text>
+  <text x="42" y="366" text-anchor="middle" class="font w" font-size="17">Week</text>
+
+  <rect x="80" y="104" width="66" height="372" rx="4" fill="#2573dd"/>
+  <text x="113" y="268" text-anchor="middle" class="font w" font-size="14">Home</text>
+  <text x="113" y="288" text-anchor="middle" class="font w" font-size="14">coming</text>
+  <text x="113" y="326" text-anchor="middle" class="font w" font-size="14">Event</text>
+
+  <text x="158" y="118" class="font t">For accounts that have not logged in for <tspan class="orange b">30 days:</tspan></text>
+  <text x="158" y="140" class="font s muted">2 following options for homecoming</text>
+  <text x="158" y="164" class="font t">• Restart in the newest server</text>
+  <text x="170" y="184" class="font s">1. Heritage the <tspan class="orange b">1st topup rewards</tspan> from the old server</text>
+  <text x="170" y="204" class="font s">2. Elf Supply <tspan class="orange b">40% OFF</tspan> old server total topup &gt;$14.99</text>
+  <text x="170" y="224" class="font s">3. 72h <tspan class="orange b">Ads Free</tspan></text>
+  <text x="170" y="244" class="font s">4. Exclusive homecoming event, <tspan class="orange b">Massive rewards</tspan></text>
+  <text x="170" y="264" class="font s orange b">Free Spectral Tiger, Free &amp; Early Heirloom piece</text>
+  <text x="158" y="288" class="font s muted">With these rewards you can easily get ahead, 1st kill and</text>
+  <text x="158" y="306" class="font s muted">rewrite the legend in the newest server.</text>
+  <text x="158" y="332" class="font t">• Stay in old server</text>
+  <text x="170" y="352" class="font s">1. Exclusive homecoming event</text>
+  <text x="170" y="372" class="font s">2. Massive rewards</text>
+
+  <text x="158" y="408" class="font t b">For all players</text>
+  <text x="158" y="430" class="font s">• Hero assemble</text>
+  <text x="170" y="450" class="font s">1. Invite your old friend back to Mini Legion</text>
+  <text x="170" y="470" class="font s">2. Get <tspan class="orange b">massive rewards</tspan> based on invited players</text>
+  <text x="170" y="490" class="font s orange b">number &amp; activeness</text>
+
+  <rect x="80" y="482" width="66" height="104" rx="4" fill="#fff200"/>
+  <text x="113" y="540" text-anchor="middle" class="font b" font-size="14">Others</text>
+  <text x="158" y="504" class="font s"><tspan class="b">1. Crash fix:</tspan> Download newest Mini Legion version</text>
+  <text x="158" y="524" class="font s">to enjoy the game without crash bothering</text>
+  <text x="158" y="548" class="font s"><tspan class="b">2. More exchange-able Items:</tspan></text>
+  <text x="166" y="568" class="font s">• Mys Merchant: Legendary ring of NAXX</text>
+  <text x="166" y="588" class="font s">• Craftroom: Abyss Mount of NAXX</text>
+
+  <rect x="16" y="594" width="52" height="1060" rx="4" fill="#f05293"/>
+  <text x="42" y="1214" text-anchor="middle" class="font w" font-size="17">3rd</text>
+  <text x="42" y="1240" text-anchor="middle" class="font w" font-size="17">Week</text>
+  <text x="42" y="1296" text-anchor="middle" class="font w" font-size="17">of</text>
+  <text x="42" y="1322" text-anchor="middle" class="font w" font-size="17">June</text>
+
+  <rect x="78" y="594" width="466" height="54" rx="4" fill="#27b965"/>
+  <circle cx="224" cy="621" r="18" fill="#9a4f18" stroke="#111827" stroke-width="2"/>
+  <text x="254" y="630" class="font w" font-size="28">New Class</text>
+
+  <rect x="78" y="656" width="66" height="180" rx="4" fill="#7c3f00"/>
+  <text x="111" y="744" text-anchor="middle" class="font w" font-size="15">Class</text>
+  <text x="111" y="766" text-anchor="middle" class="font w" font-size="15">Look</text>
+  <g class="font b" font-size="28" text-anchor="middle">
+    <rect x="154" y="656" width="74" height="88" fill="#e5e7eb"/><text x="191" y="712">🌿</text>
+    <rect x="238" y="656" width="74" height="88" fill="#e5e7eb"/><text x="275" y="712">🐆</text>
+    <rect x="322" y="656" width="74" height="88" fill="#e5e7eb"/><text x="359" y="712">🦉</text>
+    <rect x="406" y="656" width="74" height="88" fill="#e5e7eb"/><text x="443" y="712">🐻</text>
+    <rect x="154" y="752" width="74" height="84" fill="#e5e7eb"/><text x="191" y="806">🧙</text>
+    <rect x="238" y="752" width="74" height="84" fill="#e5e7eb"/><text x="275" y="806">🦌</text>
+    <rect x="322" y="752" width="74" height="84" fill="#e5e7eb"/><text x="359" y="806">🦬</text>
+    <rect x="406" y="752" width="74" height="84" fill="#e5e7eb"/><text x="443" y="806">🐗</text>
+  </g>
+
+  <rect x="78" y="854" width="130" height="62" rx="4" fill="#2573dd"/>
+  <text x="143" y="884" text-anchor="middle" class="font w" font-size="25">2 Specs</text>
+  <text x="143" y="908" text-anchor="middle" class="font w" font-size="14">with 4 branches</text>
+  <text x="78" y="940" class="font s">• Core stats: STR all forms</text>
+  <text x="78" y="958" class="font s">• Weapon: Staff &amp; Polearm</text>
+  <text x="78" y="976" class="font s">• SP Class with energy</text>
+
+  <rect x="228" y="854" width="156" height="38" rx="4" fill="#90e0a8"/>
+  <text x="306" y="878" text-anchor="middle" class="font b" font-size="13">Balance: SP Caster / Healer</text>
+  <rect x="398" y="854" width="146" height="38" rx="4" fill="#7c3f00"/>
+  <text x="471" y="878" text-anchor="middle" class="font w" font-size="13">Feral: Physic DPS / Tank</text>
+
+  <rect x="228" y="894" width="156" height="168" fill="#bda88b"/>
+  <rect x="398" y="894" width="146" height="168" fill="#bda88b"/>
+  <g stroke="#fbbf24" stroke-width="4" fill="#2563eb">
+    <circle cx="260" cy="930" r="13"/><circle cx="310" cy="962" r="13"/><circle cx="350" cy="930" r="13"/>
+    <circle cx="250" cy="1018" r="13"/><circle cx="306" cy="1018" r="13"/><circle cx="360" cy="1018" r="13"/>
+    <circle cx="426" cy="930" r="13"/><circle cx="474" cy="962" r="13"/><circle cx="520" cy="930" r="13"/>
+    <circle cx="426" cy="1018" r="13"/><circle cx="474" cy="1018" r="13"/><circle cx="520" cy="1018" r="13"/>
+  </g>
+
+  <text x="92" y="1004" class="font b" font-size="13">Balance</text>
+  <text x="92" y="1022" class="font s">Mookin &amp; Humanoid</text>
+  <text x="92" y="1040" class="font s">SP Caster / Healer</text>
+  <text x="92" y="1082" class="font b" font-size="13">Feral</text>
+  <text x="92" y="1100" class="font s">Cheetah &amp; Bear</text>
+  <text x="92" y="1118" class="font s">Physic DPS / Tank</text>
+
+  <rect x="78" y="1132" width="66" height="176" rx="4" fill="#08c5e8"/>
+  <text x="111" y="1224" text-anchor="middle" class="font b" font-size="14">Skins</text>
+  <g class="font b" font-size="28" text-anchor="middle">
+    <rect x="154" y="1132" width="78" height="84" fill="#e5e7eb"/><text x="193" y="1186">🧝</text>
+    <rect x="238" y="1132" width="78" height="84" fill="#e5e7eb"/><text x="277" y="1186">🐾</text>
+    <rect x="322" y="1132" width="78" height="84" fill="#e5e7eb"/><text x="361" y="1186">🟢</text>
+    <rect x="406" y="1132" width="78" height="84" fill="#e5e7eb"/><text x="445" y="1186">🦉</text>
+    <rect x="154" y="1224" width="78" height="84" fill="#e5e7eb"/><text x="193" y="1278">🔵</text>
+    <rect x="238" y="1224" width="78" height="84" fill="#e5e7eb"/><text x="277" y="1278">❄️</text>
+    <rect x="322" y="1224" width="78" height="84" fill="#e5e7eb"/><text x="361" y="1278">🧊</text>
+    <rect x="406" y="1224" width="78" height="84" fill="#e5e7eb"/><text x="445" y="1278">💙</text>
+  </g>
+  <text x="78" y="1328" class="font muted" font-size="11">More skins are coming...</text>
+
+  <rect x="78" y="1378" width="466" height="90" rx="8" fill="#8b4b34" stroke="#5b2e1e" stroke-width="3"/>
+  <text x="311" y="1438" text-anchor="middle" class="font" font-size="44" font-weight="900" fill="#ffd65a">Optimization</text>
+
+  <text x="78" y="1510" class="font s"><tspan class="b">*Crash issue:</tspan> Download newest version in Google Play/App Store</text>
+  <text x="78" y="1530" class="font s">to enjoy mini legion without crashes and shorter loading time.</text>
+  <text x="78" y="1572" class="font s b">*Class Buff:</text>
+  <text x="94" y="1594" class="font s b">1. Shaman:</text>
+  <text x="94" y="1614" class="font s"><tspan class="b">[Overload]</tspan> Trigger rate 7/14/21/28/35% → <tspan class="orange b">10/20/30/40/50%</tspan></text>
+  <text x="94" y="1634" class="font s"><tspan class="b">[Empowered Windfury Weapon]</tspan> 3/6/10% → <tspan class="orange b">5/10/15%</tspan></text>
+  <text x="94" y="1660" class="font s b">2. Mage:</text>
+  <text x="94" y="1680" class="font s"><tspan class="b">[Ice Lance]</tspan> Mana cost 200 → <tspan class="orange b">120</tspan></text>
+  <text x="94" y="1700" class="font s"><tspan class="b">[Biting Cold]</tspan> <tspan class="orange b">Add new effect: Crit DMG +4/8%</tspan></text>
+  <text x="94" y="1720" class="font s"><tspan class="b">[Fanatical Spell]</tspan> <tspan class="orange b">Add new effect: Ignite DMG +5/10/15/20/25%,</tspan></text>
+  <text x="94" y="1740" class="font s orange b">with 20/40/60/80/100% chance to spread ignite to 5 extra targets</text>
+  <text x="94" y="1764" class="font s"><tspan class="b">[Frozen Lance]</tspan> <tspan class="green b">will no longer increase Frostfire Bolt's Crit DMG.</tspan></text>
+  <text x="94" y="1784" class="font s orange b">New effect: Ice Lance can shoot Ice Spike to up to 3 targets</text>
+  <text x="94" y="1804" class="font s orange b">within 20 yards, with 10/20/30/40/50% damage.</text>
+  <text x="94" y="1830" class="font s b">3. Hunter:</text>
+  <text x="94" y="1850" class="font s"><tspan class="b">[Serpent Sting]</tspan> Mana cost 250 → <tspan class="orange b">200</tspan></text>
+  <text x="94" y="1870" class="font s"><tspan class="b">[Stormshot]</tspan> Basic Cooldown -3s, damage <tspan class="green b">-20%</tspan></text>
+  <text x="94" y="1890" class="font s blue b">[Hunting Stimulus] → [Trample]:</text>
+  <text x="110" y="1910" class="font s blue b">Your pet's attack deals extra physical damage equal to AP*4/8/12/16/20%.</text>
+  <text x="110" y="1930" class="font s blue b">Wild Charge and Rake trigger trample with 20/40/60/80/100% chance.</text>
+  <text x="110" y="1950" class="font s blue b">Trample: deal AP*30% physical damage to up to 9 targets within 15 yards.</text>
+
+  <rect x="16" y="1662" width="52" height="146" rx="4" fill="#ef6746"/>
+  <text x="42" y="1712" text-anchor="middle" class="font w" font-size="17">More</text>
+  <text x="42" y="1748" text-anchor="middle" class="font w" font-size="17">in</text>
+  <text x="42" y="1784" text-anchor="middle" class="font w" font-size="17">June</text>
+
+  <rect x="78" y="1662" width="466" height="66" rx="4" fill="#2573dd"/>
+  <text x="311" y="1704" text-anchor="middle" class="font w" font-size="26">New Gameplay: World wide Boss Hunt</text>
+  <rect x="78" y="1738" width="466" height="66" rx="4" fill="#fff200"/>
+  <text x="311" y="1780" text-anchor="middle" class="font h" font-size="26">To be continued</text>
+
+  <text x="280" y="2024" text-anchor="middle" class="font muted" font-size="11">Integrated for minilegionguides.com • Visual summary based on the official June roadmap</text>
+</svg>
