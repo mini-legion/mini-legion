@@ -16,6 +16,12 @@ function formatRoadmapDate(dateStr: string | null): string {
   return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
+function getRoadmapImagePath(id: string): string {
+  const svgRoadmaps = new Set(['6']);
+  const extension = svgRoadmaps.has(id) ? 'svg' : 'png';
+  return `/images/roadmap/roadmap-${id}.${extension}`;
+}
+
 export const Roadmap = () => {
   const { data: roadmapItems, loading, error } = useRoadmapItems();
 
@@ -25,7 +31,7 @@ export const Roadmap = () => {
     id: item.id,
     title: item.title,
     date: formatRoadmapDate(item.date),
-    image: `/images/roadmap/roadmap-${item.id}.png`,
+    image: getRoadmapImagePath(item.id),
   }));
   const [selectedImage, setSelectedImage] = useState<RoadmapDisplay | null>(null);
   const [zoom, setZoom] = useState(1);
