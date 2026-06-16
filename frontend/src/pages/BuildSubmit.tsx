@@ -6,6 +6,16 @@ import { submitBuild, uploadBuildSubmissionImages } from '../lib/submissions';
 
 const contentTypes = ['PvE', 'Raid', 'AFK', 'PvP', 'Beginner', 'Endgame'];
 const roles = ['DPS', 'Healer', 'Tank'] as const;
+const screenshotGroups = [
+  { key: 'skills', label: 'Skills / Rotation', hint: 'Skill bar, autocast order, rotation screenshots.' },
+  { key: 'runes', label: 'Runes', hint: 'Rune setup screenshots.' },
+  { key: 'talents', label: 'Talent Tree', hint: 'Talent tree or path screenshots.' },
+  { key: 'gear', label: 'Gear / Refines', hint: 'Gear, refine stats or equipment screenshots.' },
+  { key: 'other', label: 'Other Proof / Notes', hint: 'Extra screenshots that do not fit above.' },
+] as const;
+
+type ScreenshotGroupKey = typeof screenshotGroups[number]['key'];
+type ScreenshotFiles = Record<ScreenshotGroupKey, File[]>;
 
 interface FormState {
   contributorName: string;
@@ -39,9 +49,17 @@ const initialForm: FormState = {
   notes: '',
 };
 
+const emptyScreenshotFiles: ScreenshotFiles = {
+  skills: [],
+  runes: [],
+  talents: [],
+  gear: [],
+  other: [],
+};
+
 export const BuildSubmit = () => {
   const [form, setForm] = useState<FormState>(initialForm);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<ScreenshotFiles>(emptyScreenshotFiles);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -49,6 +67,11 @@ export const BuildSubmit = () => {
   const selectedClass = useMemo(
     () => buildsSubcategories.find((item) => item.id === form.heroClass),
     [form.heroClass]
+  );
+
+  const totalFiles = useMemo(
+    () => screenshotGroups.reduce((sum, group) => sum + files[group.key].length, 0),
+    [files]
   );
 
   const updateField = (field: keyof FormState, value: string | string[]) => {
@@ -67,14 +90,30 @@ export const BuildSubmit = () => {
     });
   };
 
-  const handleFiles = (selectedFiles: FileList | null) => {
+  const handleFiles = (groupKey: ScreenshotGroupKey, selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
 
     const acceptedFiles = [...selectedFiles]
       .filter((file) => file.type.startsWith('image/'))
-      .slice(0, 6);
+      .slice(0, 3);
 
-    setFiles(acceptedFiles);
+    setFiles((current) => ({ ...current, [groupKey]: acceptedFiles }));
+  };
+
+  const uploadGroupedImages = async (submissionId: string) => {
+    const imageGroups: Record<string, string[]> = {};
+    const allPaths: string[] = [];
+
+    for (const group of screenshotGroups) {
+      const groupFiles = files[group.key];
+      if (groupFiles.length === 0) continue;
+
+      const paths = await uploadBuildSubmissionImages(submissionId, groupFiles, group.key);
+      imageGroups[group.key] = paths;
+      allPaths.push(...paths);
+    }
+
+    return { allPaths, imageGroups };
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -90,9 +129,9 @@ export const BuildSubmit = () => {
 
     try {
       const submissionId = crypto.randomUUID();
-      const imagePaths = files.length > 0
-        ? await uploadBuildSubmissionImages(submissionId, files)
-        : [];
+      const { allPaths, imageGroups } = totalFiles > 0
+        ? await uploadGroupedImages(submissionId)
+        : { allPaths: [], imageGroups: {} };
 
       await submitBuild({
         id: submissionId,
@@ -109,12 +148,13 @@ export const BuildSubmit = () => {
         gear: form.gear.trim() || null,
         talents: form.talents.trim() || null,
         notes: form.notes.trim() || null,
-        image_paths: imagePaths,
+        image_paths: allPaths,
+        image_groups: imageGroups,
       });
 
       setSuccess(true);
       setForm(initialForm);
-      setFiles([]);
+      setFiles(emptyScreenshotFiles);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Submission failed. Please try again.');
     } finally {
@@ -157,7 +197,7 @@ export const BuildSubmit = () => {
     <div>
       <PageHeader
         title="Submit Your Build"
-        subtitle="Send your build, rotation, runes, and screenshots for review"
+        subtitle="Send your build, rotation, runes, talents, gear and screenshots for review"
         gradient="green"
       />
 
@@ -322,23 +362,40 @@ export const BuildSubmit = () => {
 
           <Card className="p-5 sm:p-6" glow="blue">
             <h3 className="text-lg font-black text-slate-100 mb-3">Screenshots</h3>
-            <p className="text-sm text-slate-400 mb-4">Upload up to 6 images: rotation, runes, talent tree, gear, or proof screenshots.</p>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(event) => handleFiles(event.target.files)}
-              className="block w-full text-sm text-slate-300 file:mr-4 file:rounded-xl file:border-0 file:bg-green-500 file:px-4 file:py-3 file:font-black file:text-slate-950 hover:file:bg-green-400"
-            />
-            {files.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-                {files.map((file) => (
-                  <div key={`${file.name}-${file.size}`} className="rounded-xl bg-slate-950/60 border border-slate-700 p-3 text-xs text-slate-400 truncate">
-                    🖼️ {file.name}
+            <p className="text-sm text-slate-400 mb-4">
+              Upload screenshots in the matching box. This prevents skills, talent tree, runes and gear from being mixed up during review.
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {screenshotGroups.map((group) => (
+                <div key={group.key} className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h4 className="text-sm font-black text-slate-200">{group.label}</h4>
+                      <p className="text-xs text-slate-500 mt-1">{group.hint}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-slate-800 px-2 py-1 text-xs font-bold text-slate-400">
+                      {files[group.key].length}/3
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(event) => handleFiles(group.key, event.target.files)}
+                    className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-green-500 file:px-3 file:py-2 file:font-black file:text-slate-950 hover:file:bg-green-400"
+                  />
+                  {files[group.key].length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {files[group.key].map((file) => (
+                        <div key={`${group.key}-${file.name}-${file.size}`} className="rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-400 truncate">
+                          🖼️ {file.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </Card>
 
           <div className="flex flex-col sm:flex-row justify-end gap-3">
