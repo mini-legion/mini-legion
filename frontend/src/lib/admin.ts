@@ -24,6 +24,7 @@ export interface AdminBuildSubmission {
   talents: string | null;
   notes: string | null;
   image_paths: string[];
+  image_groups?: Record<string, string[]> | null;
   review_notes: string | null;
   created_at: string;
   updated_at: string;
