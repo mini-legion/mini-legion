@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card, Badge } from '../components/UI';
+import { AdminBuildImageEditor } from '../components/AdminBuildImageEditor';
 import {
   adminLogin,
   adminLogout,
@@ -9,8 +10,10 @@ import {
   getStoredAdminSession,
   getSubmissionImageUrl,
   updateBuildBasic,
+  updateBuildImages,
   updateGuideBasic,
   updateSubmissionStatus,
+  type AdminBuildImages,
   type AdminBuildRow,
   type AdminBuildSubmission,
   type AdminDashboardData,
@@ -158,12 +161,19 @@ const EditModal = ({ editable, token, close, saved }: { editable: Editable; toke
 
   const isBuild = editable.type === 'build';
   const update = (key: string, value: string) => setItem((current) => current ? ({ ...current, [key]: value } as AdminBuildRow | AdminGuideRow) : current);
+  const updateImages = (images: AdminBuildImages, image: string | null) => {
+    setItem((current) => current ? ({ ...(current as AdminBuildRow), images, image } as AdminBuildRow) : current);
+  };
 
   const save = async () => {
     setBusy(true);
     try {
-      if (isBuild) await updateBuildBasic(token, item as AdminBuildRow);
-      else await updateGuideBasic(token, item as AdminGuideRow);
+      if (isBuild) {
+        await updateBuildBasic(token, item as AdminBuildRow);
+        await updateBuildImages(token, item as AdminBuildRow);
+      } else {
+        await updateGuideBasic(token, item as AdminGuideRow);
+      }
       saved();
       close();
     } finally {
@@ -173,7 +183,7 @@ const EditModal = ({ editable, token, close, saved }: { editable: Editable; toke
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6" glow="amber">
+      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6" glow="amber">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-black text-slate-100">Edit {isBuild ? 'Build' : 'Guide'}</h3>
           <button onClick={close} className="text-slate-400 hover:text-red-400 text-xl">✕</button>
@@ -184,10 +194,13 @@ const EditModal = ({ editable, token, close, saved }: { editable: Editable; toke
           <AdminTextarea label="Description" value={item.description || ''} onChange={(value) => update('description', value)} />
           <AdminInput label="Author" value={item.author} onChange={(value) => update('author', value)} />
           {isBuild ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <AdminSelect label="Tier" value={(item as AdminBuildRow).tier} onChange={(value) => update('tier', value)} options={['S', 'A', 'B', 'C']} />
-              <AdminSelect label="Role" value={(item as AdminBuildRow).role || ''} onChange={(value) => update('role', value)} options={['', 'DPS', 'Healer', 'Tank']} />
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <AdminSelect label="Tier" value={(item as AdminBuildRow).tier} onChange={(value) => update('tier', value)} options={['S', 'A', 'B', 'C']} />
+                <AdminSelect label="Role" value={(item as AdminBuildRow).role || ''} onChange={(value) => update('role', value)} options={['', 'DPS', 'Healer', 'Tank']} />
+              </div>
+              <AdminBuildImageEditor build={item as AdminBuildRow} onChange={updateImages} />
+            </>
           ) : (
             <AdminInput label="Read Time" value={(item as AdminGuideRow).read_time || ''} onChange={(value) => update('read_time', value)} />
           )}
