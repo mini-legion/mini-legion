@@ -9,9 +9,11 @@ const imageSlots = [
   { key: 'adventureGear', label: 'Adventure Gear', icon: '🗺️' },
 ] as const;
 
+type ImageSlotKey = typeof imageSlots[number]['key'];
+
 function imageUrl(value?: string | null) {
   if (!value) return '';
-  if (value.startsWith('http') || value.startsWith('/')) return value;
+  if (value.includes('://') || value.startsWith('/')) return value;
   return `/images/${value}`;
 }
 
@@ -29,28 +31,44 @@ interface AdminBuildImageEditorProps {
 export const AdminBuildImageEditor = ({ build, onChange }: AdminBuildImageEditorProps) => {
   const images = build.images || {};
 
-  const updateSlot = (slot: string, value: string) => {
-    const nextImages = cleanImages({ ...images, [slot]: value.trim() || undefined });
-    const nextCover = build.image && Object.values(nextImages).includes(build.image) ? build.image : nextImages.skills || Object.values(nextImages)[0] || null;
-    onChange(nextImages, nextCover);
+  const getNextCover = (nextImages: AdminBuildImages) => {
+    return build.image && Object.values(nextImages).includes(build.image)
+      ? build.image
+      : nextImages.skills || Object.values(nextImages)[0] || null;
   };
 
-  const removeSlot = (slot: string) => {
+  const updateSlot = (slot: ImageSlotKey, value: string) => {
+    const nextImages = cleanImages({ ...images, [slot]: value.trim() || undefined });
+    onChange(nextImages, getNextCover(nextImages));
+  };
+
+  const removeSlot = (slot: ImageSlotKey) => {
     const nextImages = { ...images };
     delete nextImages[slot];
-    const nextCover = build.image && Object.values(nextImages).includes(build.image) ? build.image : nextImages.skills || Object.values(nextImages)[0] || null;
-    onChange(cleanImages(nextImages), nextCover);
+    const cleanedImages = cleanImages(nextImages);
+    onChange(cleanedImages, getNextCover(cleanedImages));
   };
 
-  const swapSlots = (fromSlot: string, toSlot: string) => {
+  const swapSlots = (fromSlot: ImageSlotKey, toSlot: ImageSlotKey) => {
     if (fromSlot === toSlot) return;
+
     const nextImages = { ...images };
     const fromValue = nextImages[fromSlot];
     const toValue = nextImages[toSlot];
+
     nextImages[toSlot] = fromValue;
     nextImages[fromSlot] = toValue;
-    const nextCover = build.image && Object.values(nextImages).includes(build.image) ? build.image : nextImages.skills || Object.values(nextImages)[0] || null;
-    onChange(cleanImages(nextImages), nextCover);
+
+    const cleanedImages = cleanImages(nextImages);
+    onChange(cleanedImages, getNextCover(cleanedImages));
+  };
+
+  const moveSlot = (slot: ImageSlotKey, direction: -1 | 1) => {
+    const currentIndex = imageSlots.findIndex((item) => item.key === slot);
+    const targetSlot = imageSlots[currentIndex + direction]?.key;
+
+    if (!targetSlot) return;
+    swapSlots(slot, targetSlot);
   };
 
   const setCover = (value: string) => {
@@ -62,12 +80,12 @@ export const AdminBuildImageEditor = ({ build, onChange }: AdminBuildImageEditor
       <div className="mb-4">
         <h4 className="text-sm font-black uppercase tracking-wide text-slate-300">Build Images</h4>
         <p className="mt-1 text-xs text-slate-500">
-          Drag one image card onto another card to swap them. Use Remove to hide a wrong image from the published build.
+          Use the move buttons or the target slot selector to reorder images. Drag and drop still works on desktop, but many tablet browsers block it.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {imageSlots.map((slot) => {
+        {imageSlots.map((slot, index) => {
           const value = images[slot.key];
           const preview = imageUrl(value);
           const isCover = !!value && build.image === value;
@@ -80,7 +98,8 @@ export const AdminBuildImageEditor = ({ build, onChange }: AdminBuildImageEditor
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
-                swapSlots(event.dataTransfer.getData('text/plain'), slot.key);
+                const sourceSlot = event.dataTransfer.getData('text/plain') as ImageSlotKey;
+                if (sourceSlot) swapSlots(sourceSlot, slot.key);
               }}
               className="rounded-xl border border-slate-700 bg-slate-900/60 p-3"
             >
@@ -116,6 +135,42 @@ export const AdminBuildImageEditor = ({ build, onChange }: AdminBuildImageEditor
                 placeholder="Image path or URL"
                 className="w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 text-xs text-slate-300 outline-none focus:border-amber-500"
               />
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={!value || index === 0}
+                  onClick={() => moveSlot(slot.key, -1)}
+                  className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 hover:border-amber-500/40 hover:text-amber-300 disabled:opacity-40 disabled:hover:text-slate-300 disabled:hover:border-slate-600"
+                >
+                  ← Move Up
+                </button>
+                <button
+                  type="button"
+                  disabled={!value || index === imageSlots.length - 1}
+                  onClick={() => moveSlot(slot.key, 1)}
+                  className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 hover:border-amber-500/40 hover:text-amber-300 disabled:opacity-40 disabled:hover:text-slate-300 disabled:hover:border-slate-600"
+                >
+                  Move Down →
+                </button>
+              </div>
+
+              {value && (
+                <label className="mt-3 block">
+                  <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-slate-500">Move to slot</span>
+                  <select
+                    value={slot.key}
+                    onChange={(event) => swapSlots(slot.key, event.target.value as ImageSlotKey)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 text-xs text-slate-300 outline-none focus:border-amber-500"
+                  >
+                    {imageSlots.map((target) => (
+                      <option key={target.key} value={target.key}>
+                        {target.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {value && (
