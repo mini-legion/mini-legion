@@ -56,10 +56,44 @@ export async function getBuilds() {
   const { data, error } = await supabase
     .from('builds')
     .select('*')
-    .order('tier', { ascending: true })
+    .order('created_at', { ascending: false })
 
   if (error) throw error
   return data as Build[]
+}
+
+export async function getLatestBuilds(limit = 6) {
+  const { data, error } = await supabase
+    .from('builds')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data as Build[]
+}
+
+export async function getMostViewedBuilds(limit = 6) {
+  const { data, error } = await supabase
+    .from('builds')
+    .select('*')
+    .order('view_count', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data as Build[]
+}
+
+export async function trackBuildView(id: string) {
+  if (!id) return 0
+
+  const { data, error } = await supabase.rpc('increment_build_view', {
+    p_build_id: id,
+  })
+
+  if (error) return 0
+  return data as number
 }
 
 export async function getBuildsByClass(heroClass: string) {
@@ -67,7 +101,7 @@ export async function getBuildsByClass(heroClass: string) {
     .from('builds')
     .select('*')
     .ilike('hero_class', heroClass)
-    .order('tier', { ascending: true })
+    .order('created_at', { ascending: false })
 
   if (error) throw error
   return data as Build[]
