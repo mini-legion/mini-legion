@@ -88,7 +88,7 @@ export async function getMostViewedBuilds(limit = 6) {
 export async function trackBuildView(id: string) {
   if (!id) return 0
 
-  const { data, error } = await supabase.rpc('increment_build_view', {
+  const { data, error } = await (supabase as any).rpc('increment_build_view', {
     p_build_id: id,
   })
 
