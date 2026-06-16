@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home, Guides, GuideDetail, Builds, BuildDetail, BuildSubmit, Ranking, Collections, Raids, RaidDetail, Roadmap, Codes, ContentCreators, DruidHub } from './pages';
+import { AdminPanel } from './pages/AdminPanel';
 import ScrollToTop from './components/ScrollToTop';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="builds/:subcategory" element={<Builds />} />
           <Route path="builds/detail/:buildId" element={<BuildDetail />} />
           <Route path="ranking" element={<Ranking />} />
+          <Route path="manage" element={<AdminPanel />} />
           <Route path="collections" element={<Collections />} />
           <Route path="raids" element={<Raids />} />
           <Route path="raids/:subcategory" element={<Raids />} />
