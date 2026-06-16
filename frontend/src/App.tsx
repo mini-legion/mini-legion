@@ -19,7 +19,7 @@ function App() {
           <Route path="builds/:subcategory" element={<Builds />} />
           <Route path="builds/detail/:buildId" element={<BuildDetail />} />
           <Route path="ranking" element={<Ranking />} />
-          <Route path="manage" element={<AdminPanel />} />
+          <Route path="admin" element={<AdminPanel />} />
           <Route path="collections" element={<Collections />} />
           <Route path="raids" element={<Raids />} />
           <Route path="raids/:subcategory" element={<Raids />} />
