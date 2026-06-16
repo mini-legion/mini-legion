@@ -16,6 +16,7 @@ export interface BuildSubmissionPayload {
   talents?: string | null;
   notes?: string | null;
   image_paths: string[];
+  image_groups?: Record<string, string[]>;
 }
 
 export interface ContributionRow {
@@ -46,12 +47,25 @@ function sanitizeFileName(fileName: string) {
     .slice(0, 80);
 }
 
-export async function uploadBuildSubmissionImages(submissionId: string, files: File[]) {
+function sanitizeGroupName(groupName: string) {
+  return groupName
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'general';
+}
+
+export async function uploadBuildSubmissionImages(
+  submissionId: string,
+  files: File[],
+  groupName = 'general'
+) {
   const uploadedPaths: string[] = [];
+  const safeGroup = sanitizeGroupName(groupName);
 
   for (const [index, file] of files.entries()) {
     const safeName = sanitizeFileName(file.name || `image-${index}.png`);
-    const path = `${submissionId}/${Date.now()}-${index}-${safeName}`;
+    const path = `${submissionId}/${safeGroup}-${Date.now()}-${index}-${safeName}`;
 
     const { error } = await supabase.storage
       .from('build-submissions')
