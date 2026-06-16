@@ -4,6 +4,8 @@ import {
   getGuideById,
   getGuidesBySubcategory,
   getBuilds,
+  getLatestBuilds,
+  getMostViewedBuilds,
   getBuildById,
   getBuildsByClass,
   getRaids,
@@ -82,6 +84,14 @@ export function useGuidesBySubcategory(subcategory: string) {
 
 export function useBuilds() {
   return useSupabaseQuery<Build[]>(getBuilds)
+}
+
+export function useLatestBuilds(limit = 6) {
+  return useSupabaseQuery<Build[]>(() => getLatestBuilds(limit), [limit])
+}
+
+export function useMostViewedBuilds(limit = 6) {
+  return useSupabaseQuery<Build[]>(() => getMostViewedBuilds(limit), [limit])
 }
 
 export function useBuild(id: string) {
