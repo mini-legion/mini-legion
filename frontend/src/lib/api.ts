@@ -63,7 +63,6 @@ export async function getBuilds() {
 }
 
 export async function getBuildsByClass(heroClass: string) {
-  // Case-insensitive match for hero_class
   const { data, error } = await supabase
     .from('builds')
     .select('*')
@@ -242,12 +241,15 @@ export async function getGearCollectionsByLocation(location: string) {
 }
 
 // ============================================
-// STORAGE HELPERS - All images served locally to reduce Supabase egress
+// STORAGE HELPERS
 // ============================================
 
 export const storage = {
-  // Generic helper for paths stored in DB (e.g., "guides/afk/afk-guide1.png")
-  getUrl: (path: string | null | undefined) => path ? `/images/${path}` : null,
+  getUrl: (path: string | null | undefined) => {
+    if (!path) return null
+    if (path.includes('://')) return path
+    return `/images/${path}`
+  },
 
   guides: {
     getImageUrl: (path: string) => `/images/guides/${path}`,
