@@ -30,6 +30,16 @@ export interface AdminBuildSubmission {
   updated_at: string;
 }
 
+export interface AdminBuildImages {
+  skills?: string;
+  tree1?: string;
+  tree2?: string;
+  tree3?: string;
+  dungeonGear?: string;
+  adventureGear?: string;
+  [key: string]: string | undefined;
+}
+
 export interface AdminBuildRow {
   id: string;
   hero_class: string;
@@ -41,6 +51,8 @@ export interface AdminBuildRow {
   role: 'DPS' | 'Healer' | 'Tank' | null;
   content_type: string[];
   likes: number;
+  image: string | null;
+  images: AdminBuildImages | null;
   updated_at: string;
   created_at: string;
 }
@@ -146,6 +158,17 @@ export async function updateBuildBasic(token: string, build: AdminBuildRow) {
     p_author: build.author,
     p_tier: build.tier,
     p_role: build.role || '',
+  });
+
+  if (error) throw error;
+}
+
+export async function updateBuildImages(token: string, build: AdminBuildRow) {
+  const { error } = await (supabase as any).rpc('admin_update_build_images', {
+    p_token: token,
+    p_id: build.id,
+    p_images: build.images || {},
+    p_image: build.image || '',
   });
 
   if (error) throw error;
