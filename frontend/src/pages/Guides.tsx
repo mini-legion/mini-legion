@@ -50,7 +50,7 @@ const AutoGuideThumbnail = ({ guide }: { guide: GuideCardData }) => {
       <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full border border-amber-400/10 bg-amber-400/5" />
       <div className="absolute bottom-5 left-5 right-5">
         <div className="mb-2 inline-flex rounded-full border border-amber-400/25 bg-slate-950/45 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
-          Guide Thumbnail
+          {theme.label} Guide
         </div>
         <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white drop-shadow-lg">
           {guide.title}
