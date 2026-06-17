@@ -11,11 +11,52 @@ export interface YouTubeVideo {
 
 const CORS_PROXY = 'https://api.allorigins.win/raw?url='
 
+function getYouTubeFeedUrl(channelSource: string) {
+  const source = channelSource.trim()
+
+  if (source.startsWith('http') && source.includes('/feeds/videos.xml')) {
+    return source
+  }
+
+  if (source.startsWith('user:')) {
+    const username = source.replace('user:', '').trim()
+    return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(username)}`
+  }
+
+  if (source.startsWith('channel:')) {
+    const channelId = source.replace('channel:', '').trim()
+    return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`
+  }
+
+  if (source.startsWith('http')) {
+    try {
+      const url = new URL(source)
+      const channelMatch = url.pathname.match(/\/channel\/([^/]+)/)
+      if (channelMatch?.[1]) {
+        return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelMatch[1])}`
+      }
+
+      const handleOrUser = url.pathname.split('/').filter(Boolean)[0]
+      if (handleOrUser) {
+        return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(handleOrUser.replace('@', ''))}`
+      }
+    } catch {
+      // Fall through to default channel id handling.
+    }
+  }
+
+  if (source.startsWith('@')) {
+    return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(source.replace('@', ''))}`
+  }
+
+  return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source)}`
+}
+
 export async function fetchYouTubeVideos(
   channelId: string,
   maxResults: number = 3
 ): Promise<YouTubeVideo[]> {
-  const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
+  const feedUrl = getYouTubeFeedUrl(channelId)
 
   try {
     const response = await fetch(`${CORS_PROXY}${encodeURIComponent(feedUrl)}`)
@@ -37,8 +78,10 @@ export async function fetchYouTubeVideos(
       const entry = entries[i]
       const videoId = entry.querySelector('yt\\:videoId, videoId')?.textContent || ''
       const title = entry.querySelector('title')?.textContent || ''
-      const link = entry.querySelector('link')?.getAttribute('href') || ''
+      const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`
       const published = entry.querySelector('published')?.textContent || ''
+
+      if (!videoId || !title) continue
 
       videos.push({
         id: videoId,
