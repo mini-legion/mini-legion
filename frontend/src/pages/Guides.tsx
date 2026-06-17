@@ -3,15 +3,78 @@ import { PageHeader, SubcategoryCard, Card } from '../components/UI';
 import { useGuides, useGuidesBySubcategory } from '../lib/hooks';
 import { guidesSubcategories, storage } from '../lib/api';
 
-const GuideCard = ({ guide }: { guide: { id: string; title: string; description: string | null; image: string | null; author: string; read_time: string | null } }) => (
+interface GuideCardData {
+  id: string;
+  title: string;
+  description: string | null;
+  image: string | null;
+  author: string;
+  read_time: string | null;
+  subcategory?: string | null;
+  tags?: string[] | null;
+}
+
+const getGuideThumbnailTheme = (guide: GuideCardData) => {
+  const text = `${guide.title} ${guide.subcategory || ''} ${(guide.tags || []).join(' ')}`.toLowerCase();
+
+  if (text.includes('afk')) return { icon: '🌙', label: 'AFK', gradient: 'from-indigo-500/35 via-slate-800 to-slate-950', ring: 'border-indigo-400/40' };
+  if (text.includes('raid')) return { icon: '🐉', label: 'RAID', gradient: 'from-red-500/35 via-orange-950/70 to-slate-950', ring: 'border-red-400/40' };
+  if (text.includes('dungeon') || text.includes('warband')) return { icon: '⚔️', label: 'DUNGEON', gradient: 'from-orange-500/35 via-slate-800 to-slate-950', ring: 'border-orange-400/40' };
+  if (text.includes('guild') || text.includes('pvp')) return { icon: '🏆', label: 'GUILD', gradient: 'from-purple-500/35 via-slate-800 to-slate-950', ring: 'border-purple-400/40' };
+  if (text.includes('auction') || text.includes('bank')) return { icon: '💰', label: 'ECONOMY', gradient: 'from-emerald-500/35 via-slate-800 to-slate-950', ring: 'border-emerald-400/40' };
+  if (text.includes('rune') || text.includes('skill') || text.includes('talent')) return { icon: '⚡', label: 'BUILD BASICS', gradient: 'from-cyan-500/35 via-slate-800 to-slate-950', ring: 'border-cyan-400/40' };
+  if (text.includes('class') || text.includes('race')) return { icon: '🧙', label: 'CLASS', gradient: 'from-amber-500/35 via-slate-800 to-slate-950', ring: 'border-amber-400/40' };
+  if (text.includes('resource') || text.includes('progression') || text.includes('upgrade')) return { icon: '📈', label: 'PROGRESSION', gradient: 'from-green-500/35 via-slate-800 to-slate-950', ring: 'border-green-400/40' };
+  if (text.includes('f2p') || text.includes('p2p') || text.includes('value')) return { icon: '💎', label: 'VALUE', gradient: 'from-sky-500/35 via-slate-800 to-slate-950', ring: 'border-sky-400/40' };
+
+  return { icon: '📖', label: 'BEGINNER', gradient: 'from-amber-500/35 via-slate-800 to-slate-950', ring: 'border-amber-400/40' };
+};
+
+const AutoGuideThumbnail = ({ guide }: { guide: GuideCardData }) => {
+  const theme = getGuideThumbnailTheme(guide);
+
+  return (
+    <div className={`relative h-full w-full overflow-hidden bg-gradient-to-br ${theme.gradient}`}>
+      <div className="absolute inset-0 opacity-35 bg-[radial-gradient(circle_at_25%_20%,rgba(255,255,255,0.35),transparent_28%),radial-gradient(circle_at_80%_75%,rgba(251,191,36,0.22),transparent_30%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08)_0,transparent_35%,rgba(0,0,0,0.35)_100%)]" />
+      <div className="absolute left-5 top-5 flex items-center gap-2">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border bg-slate-950/55 text-2xl shadow-xl ${theme.ring}`}>
+          {theme.icon}
+        </div>
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-300">Mini Legion</div>
+          <div className="text-xs font-bold uppercase tracking-wide text-slate-300">{theme.label}</div>
+        </div>
+      </div>
+      <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full border border-white/10 bg-white/5" />
+      <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full border border-amber-400/10 bg-amber-400/5" />
+      <div className="absolute bottom-5 left-5 right-5">
+        <div className="mb-2 inline-flex rounded-full border border-amber-400/25 bg-slate-950/45 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
+          Guide Thumbnail
+        </div>
+        <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white drop-shadow-lg">
+          {guide.title}
+        </h3>
+      </div>
+    </div>
+  );
+};
+
+const GuideCard = ({ guide }: { guide: GuideCardData }) => (
   <Link to={`/guides/detail/${guide.id}`}>
     <Card className="overflow-hidden group h-full flex flex-col cursor-pointer" glow="amber">
       <div className="aspect-video relative overflow-hidden shrink-0">
-        <img
-          src={storage.getUrl(guide.image) || 'https://placehold.co/400x250/1F2937/FFFFFF?text=Guide'}
-          alt={guide.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {guide.image ? (
+          <img
+            src={storage.getUrl(guide.image) || 'https://placehold.co/400x250/1F2937/FFFFFF?text=Guide'}
+            alt={guide.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
+            <AutoGuideThumbnail guide={guide} />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
       </div>
       <div className="p-5 flex flex-col flex-1">
