@@ -10,46 +10,87 @@ export interface YouTubeVideo {
 }
 
 const CORS_PROXY = 'https://api.allorigins.win/raw?url='
+const FALLBACK_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url='
 
 function getYouTubeFeedUrl(channelSource: string) {
   const source = channelSource.trim()
 
-  if (source.startsWith('http') && source.includes('/feeds/videos.xml')) {
-    return source
-  }
-
   if (source.startsWith('user:')) {
-    const username = source.replace('user:', '').trim()
-    return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(username)}`
+    return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(source.replace('user:', '').trim())}`
   }
 
   if (source.startsWith('channel:')) {
-    const channelId = source.replace('channel:', '').trim()
-    return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`
-  }
-
-  if (source.startsWith('http')) {
-    try {
-      const url = new URL(source)
-      const channelMatch = url.pathname.match(/\/channel\/([^/]+)/)
-      if (channelMatch?.[1]) {
-        return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelMatch[1])}`
-      }
-
-      const handleOrUser = url.pathname.split('/').filter(Boolean)[0]
-      if (handleOrUser) {
-        return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(handleOrUser.replace('@', ''))}`
-      }
-    } catch {
-      // Fall through to default channel id handling.
-    }
-  }
-
-  if (source.startsWith('@')) {
-    return `https://www.youtube.com/feeds/videos.xml?user=${encodeURIComponent(source.replace('@', ''))}`
+    return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source.replace('channel:', '').trim())}`
   }
 
   return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source)}`
+}
+
+async function fetchWithTimeout(url: string) {
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 8000)
+
+  try {
+    return await fetch(url, { signal: controller.signal })
+  } finally {
+    window.clearTimeout(timeout)
+  }
+}
+
+function parseXmlVideos(xmlText: string, maxResults: number): YouTubeVideo[] {
+  const parser = new DOMParser()
+  const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+  const entries = xmlDoc.querySelectorAll('entry')
+  const videos: YouTubeVideo[] = []
+  const channelName = xmlDoc.querySelector('author > name')?.textContent || ''
+
+  for (let i = 0; i < Math.min(entries.length, maxResults); i++) {
+    const entry = entries[i]
+    const videoId = entry.querySelector('yt\\:videoId, videoId')?.textContent || ''
+    const title = entry.querySelector('title')?.textContent || ''
+    const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`
+    const published = entry.querySelector('published')?.textContent || ''
+
+    if (!videoId || !title) continue
+
+    videos.push({
+      id: videoId,
+      title,
+      link,
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+      published,
+      channelName
+    })
+  }
+
+  return videos
+}
+
+async function fetchFallback(feedUrl: string, maxResults: number): Promise<YouTubeVideo[]> {
+  try {
+    const response = await fetchWithTimeout(`${FALLBACK_PROXY}${encodeURIComponent(feedUrl)}`)
+    if (!response.ok) return []
+
+    const payload = await response.json()
+    const items = Array.isArray(payload.items) ? payload.items : []
+    const channelName = payload.feed?.title || ''
+
+    return items.slice(0, maxResults).map((item: any) => {
+      const link = item.link || ''
+      const videoId = link.split('v=')[1]?.split('&')[0] || item.guid || ''
+
+      return {
+        id: videoId,
+        title: item.title || '',
+        link: link || `https://www.youtube.com/watch?v=${videoId}`,
+        thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+        published: item.pubDate || item.published || '',
+        channelName
+      }
+    }).filter((video: YouTubeVideo) => video.id && video.title)
+  } catch {
+    return []
+  }
 }
 
 export async function fetchYouTubeVideos(
@@ -59,44 +100,18 @@ export async function fetchYouTubeVideos(
   const feedUrl = getYouTubeFeedUrl(channelId)
 
   try {
-    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(feedUrl)}`)
+    const response = await fetchWithTimeout(`${CORS_PROXY}${encodeURIComponent(feedUrl)}`)
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch YouTube feed')
+    if (response.ok) {
+      const xmlText = await response.text()
+      const videos = parseXmlVideos(xmlText, maxResults)
+      if (videos.length > 0) return videos
     }
 
-    const xmlText = await response.text()
-    const parser = new DOMParser()
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
-
-    const entries = xmlDoc.querySelectorAll('entry')
-    const videos: YouTubeVideo[] = []
-
-    const channelName = xmlDoc.querySelector('author > name')?.textContent || ''
-
-    for (let i = 0; i < Math.min(entries.length, maxResults); i++) {
-      const entry = entries[i]
-      const videoId = entry.querySelector('yt\\:videoId, videoId')?.textContent || ''
-      const title = entry.querySelector('title')?.textContent || ''
-      const link = entry.querySelector('link')?.getAttribute('href') || `https://www.youtube.com/watch?v=${videoId}`
-      const published = entry.querySelector('published')?.textContent || ''
-
-      if (!videoId || !title) continue
-
-      videos.push({
-        id: videoId,
-        title,
-        link,
-        thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-        published,
-        channelName
-      })
-    }
-
-    return videos
+    return await fetchFallback(feedUrl, maxResults)
   } catch (error) {
     console.error(`Error fetching YouTube videos for channel ${channelId}:`, error)
-    return []
+    return await fetchFallback(feedUrl, maxResults)
   }
 }
 
