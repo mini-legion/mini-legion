@@ -28,9 +28,7 @@ export interface AccountAdminBuild {
   image: string | null;
   images: unknown;
   content_type: string[];
-  sections?: unknown;
-  intro_text?: string | null;
-  talent_tips?: string | null;
+  talent_tips: string | null;
   updated_at: string;
 }
 
@@ -64,7 +62,7 @@ export async function getAccountAdminDashboard(): Promise<AccountAdminDashboard>
       .order('updated_at', { ascending: false }),
     (supabase as any)
       .from('builds')
-      .select('id, title, description, hero_class, spec, role, tier, author, image, images, content_type, sections, intro_text, talent_tips, updated_at')
+      .select('id, title, description, hero_class, spec, role, tier, author, image, images, content_type, talent_tips, updated_at')
       .order('updated_at', { ascending: false }),
     (supabase as any)
       .from('build_submissions')
@@ -131,7 +129,6 @@ export async function updateAccountAdminBuild(build: AccountAdminBuild, imagesTe
       image: build.image || null,
       images: parseJsonField(imagesText, build.images),
       content_type: parseList(contentTypesText),
-      intro_text: build.intro_text || null,
       talent_tips: build.talent_tips || null,
       updated_at: new Date().toISOString(),
     })
@@ -141,14 +138,11 @@ export async function updateAccountAdminBuild(build: AccountAdminBuild, imagesTe
 }
 
 export async function updateAccountAdminSubmission(submission: AccountAdminSubmission) {
-  const { error } = await (supabase as any)
-    .from('build_submissions')
-    .update({
-      status: submission.status,
-      review_notes: submission.review_notes || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', submission.id);
+  const { error } = await (supabase as any).rpc('auth_admin_update_submission_status', {
+    p_id: submission.id,
+    p_status: submission.status,
+    p_review_notes: submission.review_notes || null,
+  });
 
   if (error) throw error;
 }
