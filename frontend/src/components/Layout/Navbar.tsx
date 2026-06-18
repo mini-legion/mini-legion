@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo-minilegion.png";
+import { useAuth } from "../../lib/auth";
 
 const navItems = [
   { name: "Home", path: "/", icon: "🏠" },
@@ -21,6 +22,11 @@ const creditName = "Vegetarox";
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, profile } = useAuth();
+
+  const accountPath = user ? "/account" : "/login";
+  const accountLabel = user ? (profile?.display_name || "Account") : "Login";
+  const accountIcon = user ? "👤" : "🔐";
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -32,14 +38,9 @@ export const Navbar = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-md border-b border-amber-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105 overflow-hidden border border-amber-500/20">
-                <img
-                  src={logo}
-                  alt="Mini Legion Logo"
-                  className="w-full h-full object-contain"
-                />
+                <img src={logo} alt="Mini Legion Logo" className="w-full h-full object-contain" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
@@ -49,7 +50,6 @@ export const Navbar = () => {
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
               {navItems.map((item) => (
                 <Link
@@ -67,82 +67,54 @@ export const Navbar = () => {
               ))}
             </div>
 
-            {/* Made by Credit - Desktop */}
-            <div className="hidden md:flex items-center">
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                to={accountPath}
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
+                  isActive(accountPath)
+                    ? "bg-green-500/20 text-green-400 shadow-lg shadow-green-500/10"
+                    : "text-slate-300 hover:text-green-400 hover:bg-slate-700/50"
+                }`}
+              >
+                <span>{accountIcon}</span>
+                <span className="max-w-[96px] truncate">{accountLabel}</span>
+              </Link>
               <span className="text-slate-400 text-sm">
                 Made by:{" "}
-                <a
-                  href={creditLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline"
-                >
+                <a href={creditLink} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline">
                   {creditName}
                 </a>
               </span>
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition-all"
             >
               {isMobileMenuOpen ? (
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-[620px] opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
+        <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "max-h-[760px] opacity-100" : "max-h-0 opacity-0"}`}>
           <div className="px-4 py-4 bg-slate-900/95 border-t border-slate-700/50">
-            {/* Made by Credit - Mobile */}
             <div className="mb-4 text-center">
               <span className="text-slate-400 text-sm">
                 Made by:{" "}
-                <a
-                  href={creditLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline"
-                >
+                <a href={creditLink} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline">
                   {creditName}
                 </a>
               </span>
             </div>
 
-            {/* Mobile Nav Items */}
             <div className="grid grid-cols-2 gap-2">
               {navItems.map((item) => (
                 <Link
@@ -159,12 +131,23 @@ export const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
+              <Link
+                to={accountPath}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-3 ${
+                  isActive(accountPath)
+                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                    : "text-slate-300 bg-slate-800/50 border border-slate-700/50 hover:text-green-400 hover:border-green-500/30"
+                }`}
+              >
+                <span className="text-lg">{accountIcon}</span>
+                {accountLabel}
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Spacer for fixed navbar */}
       <div className="h-16 lg:h-20" />
     </>
   );
