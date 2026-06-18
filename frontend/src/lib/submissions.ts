@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 
 export interface BuildSubmissionPayload {
   id: string;
+  user_id: string;
   contributor_name: string;
   contact?: string | null;
   hero_class: string;
@@ -55,17 +56,24 @@ function sanitizeGroupName(groupName: string) {
     .replace(/^-|-$/g, '') || 'general';
 }
 
+async function getCurrentUserId() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) throw new Error('You must be logged in to submit builds.');
+  return data.user.id;
+}
+
 export async function uploadBuildSubmissionImages(
   submissionId: string,
   files: File[],
   groupName = 'general'
 ) {
+  const userId = await getCurrentUserId();
   const uploadedPaths: string[] = [];
   const safeGroup = sanitizeGroupName(groupName);
 
   for (const [index, file] of files.entries()) {
     const safeName = sanitizeFileName(file.name || `image-${index}.png`);
-    const path = `${submissionId}/${safeGroup}-${Date.now()}-${index}-${safeName}`;
+    const path = `${userId}/${submissionId}/${safeGroup}-${Date.now()}-${index}-${safeName}`;
 
     const { error } = await supabase.storage
       .from('build-submissions')
@@ -83,6 +91,12 @@ export async function uploadBuildSubmissionImages(
 }
 
 export async function submitBuild(payload: BuildSubmissionPayload) {
+  const userId = await getCurrentUserId();
+
+  if (payload.user_id !== userId) {
+    throw new Error('Submission account mismatch. Please refresh and try again.');
+  }
+
   const { error } = await (supabase as any)
     .from('build_submissions')
     .insert({
