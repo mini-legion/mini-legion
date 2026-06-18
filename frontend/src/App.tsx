@@ -4,6 +4,7 @@ import { Home, Guides, GuideDetail, Builds, BuildDetail, BuildSubmit, Ranking, C
 import { AdminPanel } from './pages/AdminPanel';
 import { AuthPage } from './pages/AuthPage';
 import { AccountPage } from './pages/AccountPage';
+import { ProtectedBuildSubmit } from './pages/ProtectedBuildSubmit';
 import { AuthProvider } from './lib/auth';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -19,7 +20,7 @@ function App() {
             <Route path="guides/:subcategory" element={<Guides />} />
             <Route path="guides/detail/:guideId" element={<GuideDetail />} />
             <Route path="builds" element={<Builds />} />
-            <Route path="builds/submit" element={<BuildSubmit />} />
+            <Route path="builds/submit" element={<ProtectedBuildSubmit />} />
             <Route path="builds/:subcategory" element={<Builds />} />
             <Route path="builds/detail/:buildId" element={<BuildDetail />} />
             <Route path="ranking" element={<Ranking />} />
