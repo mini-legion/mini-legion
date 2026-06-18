@@ -1,12 +1,42 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { PageHeader, Card, Badge } from '../components/UI';
 import { useContentCreators, useYouTubeVideos } from '../lib/hooks';
 import { formatRelativeDate } from '../lib/youtube';
 import type { ContentCreator } from '../lib/database.types';
 
-// YouTube Videos Swiper Component
+const getCreatorInitials = (name: string) => {
+  if (name.toLowerCase().includes('knocks')) return 'kN';
+  if (name.toLowerCase().includes('toeknee')) return 'TK';
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+};
+
+const CreatorAvatar = ({ creator, size = 'md', className = '' }: { creator: ContentCreator; size?: 'sm' | 'md' | 'lg'; className?: string }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+  const sizeClass = size === 'lg' ? 'w-16 h-16 text-xl rounded-xl' : size === 'sm' ? 'w-10 h-10 text-sm rounded-full' : 'w-12 h-12 text-base rounded-lg';
+  const initials = getCreatorInitials(creator.name);
+
+  if (creator.avatar && !imageFailed) {
+    return (
+      <img
+        src={creator.avatar}
+        alt={creator.name}
+        onError={() => setImageFailed(true)}
+        className={`${sizeClass} object-cover border-2 border-slate-700 group-hover:border-amber-500/50 transition-colors ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${sizeClass} flex items-center justify-center border-2 border-red-500/35 bg-gradient-to-br from-red-950 via-slate-900 to-amber-950 font-black text-amber-300 shadow-lg shadow-red-950/25 ${className}`}>
+      {initials}
+    </div>
+  );
+};
+
 const YouTubeVideosSwiper = ({ creators }: { creators: ContentCreator[] }) => {
-  // Get all YouTube creators with channel IDs
   const youtubeCreators = creators.filter(c => c.platform === 'YouTube' && c.youtube_channel_id);
 
   if (youtubeCreators.length === 0) return null;
@@ -30,9 +60,8 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollAmount = 400;
       scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        left: direction === 'left' ? -400 : 400,
         behavior: 'smooth'
       });
     }
@@ -42,11 +71,7 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
     return (
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <img
-            src={creator.avatar || 'https://placehold.co/40x40/1F2937/FFFFFF?text=?'}
-            alt={creator.name}
-            className="w-10 h-10 rounded-full object-cover border-2 border-slate-700"
-          />
+          <CreatorAvatar creator={creator} size="sm" />
           <div>
             <h3 className="text-lg font-semibold text-slate-200">{creator.name}</h3>
             <p className="text-sm text-slate-500">Loading videos...</p>
@@ -65,19 +90,9 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
 
   return (
     <div className="mb-8">
-      {/* Creator Header */}
       <div className="flex items-center gap-3 mb-4">
-        <a
-          href={creator.url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 group"
-        >
-          <img
-            src={creator.avatar || 'https://placehold.co/40x40/1F2937/FFFFFF?text=?'}
-            alt={creator.name}
-            className="w-10 h-10 rounded-full object-cover border-2 border-slate-700 group-hover:border-red-500/50 transition-colors"
-          />
+        <a href={creator.url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
+          <CreatorAvatar creator={creator} size="sm" className="group-hover:border-red-500/50" />
           <div>
             <h3 className="text-lg font-semibold text-slate-200 group-hover:text-red-400 transition-colors">
               {creator.name}
@@ -87,9 +102,7 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
         </a>
       </div>
 
-      {/* Videos Swiper */}
       <div className="relative group/swiper">
-        {/* Left Arrow */}
         <button
           onClick={() => scroll('left')}
           className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition-all opacity-0 group-hover/swiper:opacity-100 -translate-x-1/2"
@@ -99,7 +112,6 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
           </svg>
         </button>
 
-        {/* Right Arrow */}
         <button
           onClick={() => scroll('right')}
           className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition-all opacity-0 group-hover/swiper:opacity-100 translate-x-1/2"
@@ -109,27 +121,11 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
           </svg>
         </button>
 
-        {/* Videos Container */}
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 scroll-smooth"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
+        <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {videos.map((video) => (
-            <a
-              key={video.id}
-              href={video.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group/video flex-shrink-0 w-72"
-            >
+            <a key={video.id} href={video.link} target="_blank" rel="noopener noreferrer" className="group/video flex-shrink-0 w-72">
               <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-800 border border-slate-700/50 group-hover/video:border-red-500/30 transition-colors">
-                <img
-                  src={video.thumbnail}
-                  alt={video.title}
-                  className="w-full h-full object-cover group-hover/video:scale-105 transition-transform duration-300"
-                />
-                {/* Play Button Overlay */}
+                <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover group-hover/video:scale-105 transition-transform duration-300" />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/video:bg-black/30 transition-colors">
                   <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center opacity-0 group-hover/video:opacity-100 scale-75 group-hover/video:scale-100 transition-all">
                     <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
@@ -137,7 +133,6 @@ const CreatorVideos = ({ creator }: { creator: ContentCreator }) => {
                     </svg>
                   </div>
                 </div>
-                {/* Gradient Overlay */}
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
               </div>
               <div className="mt-3">
@@ -177,11 +172,7 @@ export const ContentCreators = () => {
   if (loading) {
     return (
       <div>
-        <PageHeader
-          title="Creators"
-          subtitle="Amazing people making Mini Legion content"
-          gradient="purple"
-        />
+        <PageHeader title="Creators" subtitle="Amazing people making Mini Legion content" gradient="purple" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
@@ -194,11 +185,7 @@ export const ContentCreators = () => {
   if (error) {
     return (
       <div>
-        <PageHeader
-          title="Creators"
-          subtitle="Amazing people making Mini Legion content"
-          gradient="purple"
-        />
+        <PageHeader title="Creators" subtitle="Amazing people making Mini Legion content" gradient="purple" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <Card className="p-8 text-center">
             <div className="text-5xl mb-4">😕</div>
@@ -216,17 +203,11 @@ export const ContentCreators = () => {
 
   return (
     <div>
-      <PageHeader
-        title="Creators"
-        subtitle="Amazing people making Mini Legion content"
-        gradient="purple"
-      />
+      <PageHeader title="Creators" subtitle="Amazing people making Mini Legion content" gradient="purple" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* YouTube Videos Swiper - Now at the top! */}
         <YouTubeVideosSwiper creators={allCreators} />
 
-        {/* Featured Creators */}
         {featuredCreators.length > 0 && (
           <div className="mb-16">
             <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-2">
@@ -237,26 +218,15 @@ export const ContentCreators = () => {
                 const platformStyles = getPlatformStyles(creator.platform);
 
                 return (
-                  <a
-                    key={creator.id}
-                    href={creator.url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group"
-                  >
+                  <a key={creator.id} href={creator.url || '#'} target="_blank" rel="noopener noreferrer" className="group">
                     <Card className="p-6 h-full relative overflow-hidden" glow="purple">
-                      {/* Featured badge */}
                       <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-l from-amber-500/30 to-transparent">
                         <span className="text-amber-400 text-xs font-bold">⭐ FEATURED</span>
                       </div>
 
                       <div className="flex items-center gap-4 mb-4">
                         <div className="relative">
-                          <img
-                            src={creator.avatar || 'https://placehold.co/64x64/1F2937/FFFFFF?text=?'}
-                            alt={creator.name}
-                            className="w-16 h-16 rounded-xl object-cover border-2 border-slate-700 group-hover:border-amber-500/50 transition-colors"
-                          />
+                          <CreatorAvatar creator={creator} size="lg" />
                           <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full ${platformStyles.bg} ${platformStyles.border} border flex items-center justify-center text-xs`}>
                             {platformStyles.icon}
                           </div>
@@ -266,17 +236,13 @@ export const ContentCreators = () => {
                             {creator.name}
                           </h3>
                           <div className="flex items-center gap-2">
-                            <Badge variant="default" size="sm">
-                              {creator.platform}
-                            </Badge>
+                            <Badge variant="default" size="sm">{creator.platform}</Badge>
                             <span className="text-slate-500 text-sm">{creator.followers}</span>
                           </div>
                         </div>
                       </div>
 
-                      <p className="text-slate-400 text-sm line-clamp-3 mb-4">
-                        {creator.description}
-                      </p>
+                      <p className="text-slate-400 text-sm line-clamp-3 mb-4">{creator.description}</p>
 
                       <div className={`flex items-center gap-2 ${platformStyles.text} text-sm font-medium`}>
                         <span>Visit Channel</span>
@@ -292,7 +258,6 @@ export const ContentCreators = () => {
           </div>
         )}
 
-        {/* All Creators */}
         {otherCreators.length > 0 && (
           <div>
             <h2 className="text-2xl font-bold text-slate-100 mb-6">All Creators</h2>
@@ -301,21 +266,11 @@ export const ContentCreators = () => {
                 const platformStyles = getPlatformStyles(creator.platform);
 
                 return (
-                  <a
-                    key={creator.id}
-                    href={creator.url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group"
-                  >
+                  <a key={creator.id} href={creator.url || '#'} target="_blank" rel="noopener noreferrer" className="group">
                     <Card className="p-4 h-full" glow="none">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="relative">
-                          <img
-                            src={creator.avatar || 'https://placehold.co/48x48/1F2937/FFFFFF?text=?'}
-                            alt={creator.name}
-                            className="w-12 h-12 rounded-lg object-cover border border-slate-700 group-hover:border-amber-500/50 transition-colors"
-                          />
+                          <CreatorAvatar creator={creator} size="md" />
                           <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${platformStyles.bg} ${platformStyles.border} border flex items-center justify-center text-[10px]`}>
                             {platformStyles.icon}
                           </div>
@@ -327,9 +282,7 @@ export const ContentCreators = () => {
                           <p className="text-slate-500 text-xs">{creator.followers}</p>
                         </div>
                       </div>
-                      <p className="text-slate-400 text-xs line-clamp-2">
-                        {creator.description}
-                      </p>
+                      <p className="text-slate-400 text-xs line-clamp-2">{creator.description}</p>
                     </Card>
                   </a>
                 );
@@ -338,14 +291,11 @@ export const ContentCreators = () => {
           </div>
         )}
 
-        {/* Become a Creator CTA */}
         <Card className="mt-16 p-8 text-center relative overflow-hidden" hover={false}>
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-amber-500/5" />
           <div className="relative">
             <div className="text-5xl mb-4">🎥</div>
-            <h3 className="text-2xl font-bold text-slate-100 mb-4">
-              Are You a Creator?
-            </h3>
+            <h3 className="text-2xl font-bold text-slate-100 mb-4">Are You a Creator?</h3>
             <p className="text-slate-400 max-w-xl mx-auto mb-6">
               Create Mini Legion content? We'd love to feature you! Get in touch with us to be added to our creators list.
             </p>
