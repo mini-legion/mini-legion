@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/UI';
 import { MyBuildSubmissions } from '../components/MyBuildSubmissions';
+import { AccountAdminManager } from '../components/AccountAdminManager';
 import { useAuth } from '../lib/auth';
 
 export const AccountPage = () => {
@@ -77,13 +78,20 @@ export const AccountPage = () => {
 
   return (
     <div>
-      <PageHeader title="Account" subtitle="Manage your creator profile, submissions and email preferences" gradient="green" />
+      <PageHeader title="Account" subtitle="Manage your creator profile, submissions and admin tools" gradient="green" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
         <Card className="p-6" glow="green">
-          <div className="mb-6">
-            <h2 className="text-xl font-black text-slate-100 mb-2">Profile</h2>
-            <p className="text-sm text-slate-400">This profile is used for submissions, ownership and future creator features.</p>
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-slate-100 mb-2">Profile</h2>
+              <p className="text-sm text-slate-400">This profile is used for submissions, ownership and creator features.</p>
+            </div>
+            {profile?.role === 'admin' && (
+              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-amber-300">
+                Admin Account
+              </span>
+            )}
           </div>
 
           {message && <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-300 text-sm font-semibold">{message}</div>}
@@ -107,7 +115,7 @@ export const AccountPage = () => {
 
             <label className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
               <input type="checkbox" checked={marketingOptIn} onChange={(event) => setMarketingOptIn(event.target.checked)} className="mt-1" />
-              <span className="text-sm text-slate-400">Receive Mini Legion Guide news and creator updates.</span>
+              <span className="text-sm text-slate-400">Receive Mini Legion Guide updates.</span>
             </label>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
@@ -120,6 +128,8 @@ export const AccountPage = () => {
             </div>
           </form>
         </Card>
+
+        {profile?.role === 'admin' && <AccountAdminManager />}
 
         <MyBuildSubmissions />
       </div>
