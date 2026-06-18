@@ -20,6 +20,19 @@ export interface BuildSubmissionPayload {
   image_groups?: Record<string, string[]>;
 }
 
+export interface MyBuildSubmission extends BuildSubmissionPayload {
+  status: 'pending' | 'reviewing' | 'approved' | 'rejected';
+  review_notes?: string | null;
+  approved_build_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type EditableBuildSubmissionFields = Pick<
+  BuildSubmissionPayload,
+  'contributor_name' | 'contact' | 'spec' | 'role' | 'content_type' | 'title' | 'description' | 'runes' | 'rotation' | 'gear' | 'talents' | 'notes'
+>;
+
 export interface ContributionRow {
   contributor_name: string;
   contribution_type: 'build' | 'guide' | 'update';
@@ -102,6 +115,36 @@ export async function submitBuild(payload: BuildSubmissionPayload) {
     });
 
   if (error) throw error;
+}
+
+export async function getMyBuildSubmissions(): Promise<MyBuildSubmission[]> {
+  await getCurrentUserId();
+
+  const { data, error } = await (supabase as any)
+    .from('build_submissions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as MyBuildSubmission[];
+}
+
+export async function updateMyBuildSubmission(
+  submissionId: string,
+  updates: EditableBuildSubmissionFields
+): Promise<MyBuildSubmission> {
+  await getCurrentUserId();
+
+  const { data, error } = await (supabase as any)
+    .from('build_submissions')
+    .update(updates)
+    .eq('id', submissionId)
+    .in('status', ['pending', 'reviewing'])
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data as MyBuildSubmission;
 }
 
 export async function getContributorRankings(): Promise<ContributorRankingEntry[]> {
