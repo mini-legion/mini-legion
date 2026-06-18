@@ -28,6 +28,7 @@ export interface AccountAdminBuild {
   image: string | null;
   images: unknown;
   content_type: string[];
+  intro_text?: string | null;
   talent_tips: string | null;
   updated_at: string;
 }
