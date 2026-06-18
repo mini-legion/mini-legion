@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export interface BuildSubmissionPayload {
   id: string;
-  user_id: string;
+  user_id?: string;
   contributor_name: string;
   contact?: string | null;
   hero_class: string;
@@ -58,7 +58,7 @@ function sanitizeGroupName(groupName: string) {
 
 async function getCurrentUserId() {
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new Error('You must be logged in to submit builds.');
+  if (error || !data.user) throw new Error('Please login before submitting builds.');
   return data.user.id;
 }
 
@@ -93,14 +93,11 @@ export async function uploadBuildSubmissionImages(
 export async function submitBuild(payload: BuildSubmissionPayload) {
   const userId = await getCurrentUserId();
 
-  if (payload.user_id !== userId) {
-    throw new Error('Submission account mismatch. Please refresh and try again.');
-  }
-
   const { error } = await (supabase as any)
     .from('build_submissions')
     .insert({
       ...payload,
+      user_id: payload.user_id || userId,
       status: 'pending',
     });
 
