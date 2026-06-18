@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/UI';
+import { MyBuildSubmissions } from '../components/MyBuildSubmissions';
 import { useAuth } from '../lib/auth';
 
 export const AccountPage = () => {
@@ -76,13 +77,13 @@ export const AccountPage = () => {
 
   return (
     <div>
-      <PageHeader title="Account" subtitle="Manage your creator profile and email preferences" gradient="green" />
+      <PageHeader title="Account" subtitle="Manage your creator profile, submissions and email preferences" gradient="green" />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
         <Card className="p-6" glow="green">
           <div className="mb-6">
             <h2 className="text-xl font-black text-slate-100 mb-2">Profile</h2>
-            <p className="text-sm text-slate-400">This profile will be used for submissions, ownership and future creator features.</p>
+            <p className="text-sm text-slate-400">This profile is used for submissions, ownership and future creator features.</p>
           </div>
 
           {message && <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-300 text-sm font-semibold">{message}</div>}
@@ -120,12 +121,7 @@ export const AccountPage = () => {
           </form>
         </Card>
 
-        <Card className="p-6" glow="amber">
-          <h3 className="text-lg font-black text-slate-100 mb-2">Next creator features</h3>
-          <p className="text-sm text-slate-400 leading-relaxed">
-            Build ownership is now stored with your account. Editing published builds, guide section submissions and comments can be added on top of this account system.
-          </p>
-        </Card>
+        <MyBuildSubmissions />
       </div>
     </div>
   );
