@@ -13,6 +13,7 @@ import {
 } from '../lib/accountAdmin';
 
 type AdminTab = 'guides' | 'builds' | 'submissions';
+type EditableItem = AccountAdminGuide | AccountAdminBuild | AccountAdminSubmission;
 type Editable =
   | { type: 'guide'; item: AccountAdminGuide }
   | { type: 'build'; item: AccountAdminBuild }
@@ -151,7 +152,7 @@ const AdminRow = ({ title, subtitle, href, onEdit }: { title: string; subtitle: 
 );
 
 const EditModal = ({ editable, close, saved }: { editable: Editable; close: () => void; saved: () => void }) => {
-  const [item, setItem] = useState<Editable['item'] | null>(editable?.item || null);
+  const [item, setItem] = useState<EditableItem | null>(editable?.item || null);
   const [jsonText, setJsonText] = useState('');
   const [listText, setListText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -176,7 +177,7 @@ const EditModal = ({ editable, close, saved }: { editable: Editable; close: () =
   if (!editable || !item) return null;
 
   const update = (key: string, value: string) => {
-    setItem((current) => current ? ({ ...current, [key]: value } as Editable['item']) : current);
+    setItem((current) => current ? ({ ...current, [key]: value } as EditableItem) : current);
   };
 
   const save = async () => {
