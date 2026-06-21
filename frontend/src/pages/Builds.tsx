@@ -11,6 +11,8 @@ const classColors: Record<string, { gradient: string; icon: string }> = {
   warrior: { gradient: "from-amber-600 to-orange-700", icon: "/images/classes/warrior-logo.png" },
   rogue: { gradient: "from-yellow-400 to-amber-500", icon: "/images/classes/rogue-logo.png" },
   paladin: { gradient: "from-pink-400 to-rose-500", icon: "/images/classes/paladin-logo.png" },
+  shaman: { gradient: "from-sky-400 to-cyan-600", icon: "/images/classes/shaman-logo.svg" },
+  druid: { gradient: "from-lime-400 to-green-700", icon: "/images/classes/druid-logo.svg" },
 };
 
 const getViewCount = (build: Build) => Number((build as Build & { view_count?: number }).view_count || 0);
@@ -264,7 +266,7 @@ const MainBuildsView = () => {
       <PageHeader title="Builds" subtitle="Optimized hero builds for every class and playstyle" gradient="green" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-4 mb-16">
           {buildsSubcategories.map((sub) => {
             const buildCount = buildCountByClass[sub.id] || 0;
             const colors = classColors[sub.id] || classColors.hunter;
