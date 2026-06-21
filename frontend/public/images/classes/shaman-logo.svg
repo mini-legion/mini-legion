@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Shaman class icon">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="25%" r="75%">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="0.45" stop-color="#0e7490"/>
+      <stop offset="1" stop-color="#082f49"/>
+    </radialGradient>
+    <linearGradient id="bolt" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fef08a"/>
+      <stop offset="0.45" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#ea580c"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <circle cx="128" cy="128" r="112" fill="#020617"/>
+  <circle cx="128" cy="128" r="101" fill="url(#bg)" stroke="#0f172a" stroke-width="10"/>
+  <circle cx="82" cy="78" r="52" fill="#ffffff" opacity="0.16"/>
+  <g filter="url(#shadow)">
+    <path d="M139 28L65 144h54l-18 84 90-128h-58l6-72z" fill="url(#bolt)" stroke="#172554" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M64 171c30 22 100 22 130-6" fill="none" stroke="#a7f3d0" stroke-width="12" stroke-linecap="round" opacity="0.9"/>
+    <path d="M78 191c25 15 78 15 104-4" fill="none" stroke="#7dd3fc" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
+  </g>
+</svg>
