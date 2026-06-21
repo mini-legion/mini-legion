@@ -329,6 +329,8 @@ export const buildsSubcategories = [
   { id: 'warrior', name: 'Warrior', icon: '🛡️', description: 'Tank and melee builds' },
   { id: 'rogue', name: 'Rogue', icon: '🗡️', description: 'Stealth and burst builds' },
   { id: 'paladin', name: 'Paladin', icon: '⚜️', description: 'Holy warrior builds' },
+  { id: 'shaman', name: 'Shaman', icon: '🌩️', description: 'Elemental and support builds' },
+  { id: 'druid', name: 'Druid', icon: '🌿', description: 'Nature, healing and hybrid builds' },
 ]
 
 // Raid icons served locally to reduce Supabase egress
