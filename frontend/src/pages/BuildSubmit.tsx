@@ -4,14 +4,14 @@ import { PageHeader, Card } from '../components/UI';
 import { submitBuild, uploadBuildSubmissionImages } from '../lib/submissions';
 
 const buildClassOptions = [
-  { id: 'hunter', name: 'Hunter' },
-  { id: 'priest', name: 'Priest' },
-  { id: 'mage', name: 'Mage' },
-  { id: 'warrior', name: 'Warrior' },
-  { id: 'rogue', name: 'Rogue' },
-  { id: 'paladin', name: 'Paladin' },
-  { id: 'shaman', name: 'Shaman' },
-  { id: 'druid', name: 'Druid' },
+  { id: 'hunter', name: 'Hunter', icon: '🏹' },
+  { id: 'priest', name: 'Priest', icon: '✨' },
+  { id: 'mage', name: 'Mage', icon: '🔮' },
+  { id: 'warrior', name: 'Warrior', icon: '🛡️' },
+  { id: 'rogue', name: 'Rogue', icon: '🗡️' },
+  { id: 'paladin', name: 'Paladin', icon: '⚜️' },
+  { id: 'shaman', name: 'Shaman', icon: '🌩️' },
+  { id: 'druid', name: 'Druid', icon: '🌿' },
 ];
 
 const contentTypes = ['PvE', 'Raid', 'AFK', 'PvP', 'Beginner', 'Endgame'];
@@ -262,19 +262,32 @@ export const BuildSubmit = () => {
 
           <Card className="p-5 sm:p-6" glow="green">
             <h3 className="text-lg font-black text-slate-100 mb-5">Build basics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <label className="block">
-                <span className="text-sm font-bold text-slate-300">Class *</span>
-                <select
-                  value={form.heroClass}
-                  onChange={(event) => updateField('heroClass', event.target.value)}
-                  className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500"
-                >
-                  {buildClassOptions.map((item) => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))}
-                </select>
-              </label>
+
+            <div className="mb-5">
+              <span className="text-sm font-bold text-slate-300">Class *</span>
+              <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {buildClassOptions.map((item) => {
+                  const active = form.heroClass === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => updateField('heroClass', item.id)}
+                      className={`rounded-xl border px-3 py-3 text-left font-black transition-all ${
+                        active
+                          ? 'border-green-400 bg-green-500 text-slate-950 shadow-lg shadow-green-500/20'
+                          : 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-green-500/50 hover:text-green-300'
+                      }`}
+                    >
+                      <span className="mr-2">{item.icon}</span>
+                      {item.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <label className="block">
                 <span className="text-sm font-bold text-slate-300">Spec</span>
                 <input
