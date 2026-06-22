@@ -1,8 +1,18 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/UI';
-import { buildsSubcategories } from '../lib/api';
 import { submitBuild, uploadBuildSubmissionImages } from '../lib/submissions';
+
+const buildClassOptions = [
+  { id: 'hunter', name: 'Hunter' },
+  { id: 'priest', name: 'Priest' },
+  { id: 'mage', name: 'Mage' },
+  { id: 'warrior', name: 'Warrior' },
+  { id: 'rogue', name: 'Rogue' },
+  { id: 'paladin', name: 'Paladin' },
+  { id: 'shaman', name: 'Shaman' },
+  { id: 'druid', name: 'Druid' },
+];
 
 const contentTypes = ['PvE', 'Raid', 'AFK', 'PvP', 'Beginner', 'Endgame'];
 const roles = ['DPS', 'Healer', 'Tank'] as const;
@@ -65,7 +75,7 @@ export const BuildSubmit = () => {
   const [success, setSuccess] = useState(false);
 
   const selectedClass = useMemo(
-    () => buildsSubcategories.find((item) => item.id === form.heroClass),
+    () => buildClassOptions.find((item) => item.id === form.heroClass),
     [form.heroClass]
   );
 
@@ -260,7 +270,7 @@ export const BuildSubmit = () => {
                   onChange={(event) => updateField('heroClass', event.target.value)}
                   className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500"
                 >
-                  {buildsSubcategories.map((item) => (
+                  {buildClassOptions.map((item) => (
                     <option key={item.id} value={item.id}>{item.name}</option>
                   ))}
                 </select>
@@ -337,59 +347,29 @@ export const BuildSubmit = () => {
           <Card className="p-5 sm:p-6" glow="green">
             <h3 className="text-lg font-black text-slate-100 mb-5">Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-sm font-bold text-slate-300">Runes</span>
-                <textarea value={form.runes} onChange={(event) => updateField('runes', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="List runes and why you use them." />
-              </label>
-              <label className="block">
-                <span className="text-sm font-bold text-slate-300">Rotation / Autocast Order</span>
-                <textarea value={form.rotation} onChange={(event) => updateField('rotation', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Skill order, rotation, autocast notes." />
-              </label>
-              <label className="block">
-                <span className="text-sm font-bold text-slate-300">Gear / Refines</span>
-                <textarea value={form.gear} onChange={(event) => updateField('gear', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Gear stats, refine priorities, recommended items." />
-              </label>
-              <label className="block">
-                <span className="text-sm font-bold text-slate-300">Talents / Extra Notes</span>
-                <textarea value={form.talents} onChange={(event) => updateField('talents', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Talent path, branch notes, alternatives." />
-              </label>
+              <label className="block"><span className="text-sm font-bold text-slate-300">Runes</span><textarea value={form.runes} onChange={(event) => updateField('runes', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="List runes and why you use them." /></label>
+              <label className="block"><span className="text-sm font-bold text-slate-300">Rotation / Autocast Order</span><textarea value={form.rotation} onChange={(event) => updateField('rotation', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Skill order, rotation, autocast notes." /></label>
+              <label className="block"><span className="text-sm font-bold text-slate-300">Gear / Refines</span><textarea value={form.gear} onChange={(event) => updateField('gear', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Gear stats, refine priorities, recommended items." /></label>
+              <label className="block"><span className="text-sm font-bold text-slate-300">Talents / Extra Notes</span><textarea value={form.talents} onChange={(event) => updateField('talents', event.target.value)} rows={5} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Talent path, branch notes, alternatives." /></label>
             </div>
-            <label className="block mt-4">
-              <span className="text-sm font-bold text-slate-300">Additional Notes</span>
-              <textarea value={form.notes} onChange={(event) => updateField('notes', event.target.value)} rows={4} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Anything else reviewers should know." />
-            </label>
+            <label className="block mt-4"><span className="text-sm font-bold text-slate-300">Additional Notes</span><textarea value={form.notes} onChange={(event) => updateField('notes', event.target.value)} rows={4} className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500" placeholder="Anything else reviewers should know." /></label>
           </Card>
 
           <Card className="p-5 sm:p-6" glow="blue">
             <h3 className="text-lg font-black text-slate-100 mb-3">Screenshots</h3>
-            <p className="text-sm text-slate-400 mb-4">
-              Upload screenshots in the matching box. This prevents skills, talent tree, runes and gear from being mixed up during review.
-            </p>
+            <p className="text-sm text-slate-400 mb-4">Upload screenshots in the matching box. This prevents skills, talent tree, runes and gear from being mixed up during review.</p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {screenshotGroups.map((group) => (
                 <div key={group.key} className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
                   <div className="flex items-start justify-between gap-3 mb-3">
-                    <div>
-                      <h4 className="text-sm font-black text-slate-200">{group.label}</h4>
-                      <p className="text-xs text-slate-500 mt-1">{group.hint}</p>
-                    </div>
-                    <span className="shrink-0 rounded-full bg-slate-800 px-2 py-1 text-xs font-bold text-slate-400">
-                      {files[group.key].length}/3
-                    </span>
+                    <div><h4 className="text-sm font-black text-slate-200">{group.label}</h4><p className="text-xs text-slate-500 mt-1">{group.hint}</p></div>
+                    <span className="shrink-0 rounded-full bg-slate-800 px-2 py-1 text-xs font-bold text-slate-400">{files[group.key].length}/3</span>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(event) => handleFiles(group.key, event.target.files)}
-                    className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-green-500 file:px-3 file:py-2 file:font-black file:text-slate-950 hover:file:bg-green-400"
-                  />
+                  <input type="file" accept="image/*" multiple onChange={(event) => handleFiles(group.key, event.target.files)} className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-green-500 file:px-3 file:py-2 file:font-black file:text-slate-950 hover:file:bg-green-400" />
                   {files[group.key].length > 0 && (
                     <div className="mt-3 space-y-2">
                       {files[group.key].map((file) => (
-                        <div key={`${group.key}-${file.name}-${file.size}`} className="rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-400 truncate">
-                          🖼️ {file.name}
-                        </div>
+                        <div key={`${group.key}-${file.name}-${file.size}`} className="rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-400 truncate">🖼️ {file.name}</div>
                       ))}
                     </div>
                   )}
@@ -399,14 +379,8 @@ export const BuildSubmit = () => {
           </Card>
 
           <div className="flex flex-col sm:flex-row justify-end gap-3">
-            <Link to="/builds" className="px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold border border-slate-700 hover:border-slate-500 transition-all text-center">
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-slate-950 font-black hover:shadow-lg hover:shadow-green-500/25 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-            >
+            <Link to="/builds" className="px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold border border-slate-700 hover:border-slate-500 transition-all text-center">Cancel</Link>
+            <button type="submit" disabled={isSubmitting} className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-slate-950 font-black hover:shadow-lg hover:shadow-green-500/25 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
               {isSubmitting ? 'Submitting...' : 'Submit Build'}
             </button>
           </div>
