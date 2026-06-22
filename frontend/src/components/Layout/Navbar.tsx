@@ -26,13 +26,12 @@ export const Navbar = () => {
 
   const isAdmin = profile?.role === "admin";
   const accountPath = user ? "/account" : "/login";
-  const adminPath = "/account?adminTab=submissions#admin-editor";
+  const adminPath = "/admin";
   const accountLabel = user ? (profile?.display_name || "Account") : "Login";
   const accountIcon = user ? "👤" : "🔐";
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path.startsWith("/account") && location.pathname === "/account") return true;
     return location.pathname.startsWith(path);
   };
 
@@ -74,7 +73,11 @@ export const Navbar = () => {
               {isAdmin && (
                 <Link
                   to={adminPath}
-                  className="px-3 py-2 rounded-lg text-sm font-black transition-all duration-300 flex items-center gap-2 bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 hover:text-amber-200 shadow-lg shadow-amber-500/10"
+                  className={`px-3 py-2 rounded-lg text-sm font-black transition-all duration-300 flex items-center gap-2 border border-amber-500/30 hover:bg-amber-500/25 hover:text-amber-200 shadow-lg shadow-amber-500/10 ${
+                    isActive(adminPath)
+                      ? "bg-amber-500/25 text-amber-200"
+                      : "bg-amber-500/15 text-amber-300"
+                  }`}
                 >
                   <span>🛠️</span>
                   <span>Admin</span>
@@ -147,7 +150,11 @@ export const Navbar = () => {
                 <Link
                   to={adminPath}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-3 rounded-xl text-sm font-black transition-all duration-300 flex items-center gap-3 bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25"
+                  className={`px-4 py-3 rounded-xl text-sm font-black transition-all duration-300 flex items-center gap-3 border border-amber-500/30 hover:bg-amber-500/25 ${
+                    isActive(adminPath)
+                      ? "bg-amber-500/25 text-amber-200"
+                      : "bg-amber-500/15 text-amber-300"
+                  }`}
                 >
                   <span className="text-lg">🛠️</span>
                   Admin
