@@ -74,31 +74,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const nextProfile = await ensureProfile(nextUser);
-    setProfile(nextProfile);
+    try {
+      const nextProfile = await ensureProfile(nextUser);
+      setProfile(nextProfile);
+    } catch {
+      setProfile(null);
+    }
   };
 
   useEffect(() => {
     let mounted = true;
+    let finished = false;
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!mounted) return;
-      setSession(data.session);
+    const finishLoading = () => {
+      if (!mounted || finished) return;
+      finished = true;
+      setLoading(false);
+    };
 
+    const fallbackTimer = window.setTimeout(() => {
+      finishLoading();
+    }, 3000);
+
+    const initializeAuth = async () => {
       try {
-        await loadProfile(data.session?.user ?? null);
-      } finally {
-        if (mounted) setLoading(false);
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        setSession(data.session);
+        finishLoading();
+
+        // Profile loading should not block protected pages. If it fails, the user can still submit builds.
+        loadProfile(data.session?.user ?? null);
+      } catch {
+        if (!mounted) return;
+        setSession(null);
+        setProfile(null);
+        finishLoading();
       }
-    });
+    };
+
+    initializeAuth();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
-      loadProfile(nextSession?.user ?? null).catch(() => setProfile(null));
+      setLoading(false);
+
+      // Avoid doing extra Supabase requests inside the auth callback stack.
+      window.setTimeout(() => {
+        loadProfile(nextSession?.user ?? null);
+      }, 0);
     });
 
     return () => {
       mounted = false;
+      window.clearTimeout(fallbackTimer);
       listener.subscription.unsubscribe();
     };
   }, []);
