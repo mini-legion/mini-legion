@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/UI';
 import { submitBuild, uploadBuildSubmissionImages } from '../lib/submissions';
+import { useAuth } from '../lib/auth';
 
 const buildClassOptions = [
   { id: 'hunter', name: 'Hunter', icon: '🏹' },
@@ -68,11 +69,26 @@ const emptyScreenshotFiles: ScreenshotFiles = {
 };
 
 export const BuildSubmit = () => {
+  const { user, profile } = useAuth();
   const [form, setForm] = useState<FormState>(initialForm);
   const [files, setFiles] = useState<ScreenshotFiles>(emptyScreenshotFiles);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const accountName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
+  const accountContact = profile?.discord || '';
+  const isLoggedIn = Boolean(user);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    setForm((current) => ({
+      ...current,
+      contributorName: current.contributorName || accountName,
+      contact: current.contact || accountContact,
+    }));
+  }, [isLoggedIn, accountName, accountContact]);
 
   const selectedClass = useMemo(
     () => buildClassOptions.find((item) => item.id === form.heroClass),
@@ -130,8 +146,11 @@ export const BuildSubmit = () => {
     event.preventDefault();
     setError(null);
 
-    if (!form.contributorName.trim() || !form.title.trim() || !form.description.trim()) {
-      setError('Please add your name, build title, and a short description.');
+    const creatorName = (accountName || form.contributorName).trim();
+    const contactValue = (form.contact || accountContact).trim();
+
+    if (!creatorName || !form.title.trim() || !form.description.trim()) {
+      setError('Please add a build title and a short description. Your creator name is taken from your logged-in account.');
       return;
     }
 
@@ -145,8 +164,9 @@ export const BuildSubmit = () => {
 
       await submitBuild({
         id: submissionId,
-        contributor_name: form.contributorName.trim(),
-        contact: form.contact.trim() || null,
+        user_id: user?.id,
+        contributor_name: creatorName,
+        contact: contactValue || null,
         hero_class: form.heroClass,
         spec: form.spec.trim() || null,
         role: form.role || null,
@@ -163,7 +183,7 @@ export const BuildSubmit = () => {
       });
 
       setSuccess(true);
-      setForm(initialForm);
+      setForm({ ...initialForm, contributorName: accountName, contact: accountContact });
       setFiles(emptyScreenshotFiles);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Submission failed. Please try again.');
@@ -237,21 +257,37 @@ export const BuildSubmit = () => {
           )}
 
           <Card className="p-5 sm:p-6" glow="green">
-            <h3 className="text-lg font-black text-slate-100 mb-5">Creator info</h3>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
+              <div>
+                <h3 className="text-lg font-black text-slate-100">Creator info</h3>
+                <p className="text-sm text-slate-400 mt-1">
+                  {isLoggedIn
+                    ? 'This build will be linked to your logged-in account automatically.'
+                    : 'Login is required so builds can be linked to the creator account.'}
+                </p>
+              </div>
+              {isLoggedIn && (
+                <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-black uppercase text-green-300">
+                  Linked Account
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="block">
-                <span className="text-sm font-bold text-slate-300">Name / Creator Name *</span>
+                <span className="text-sm font-bold text-slate-300">Creator Name</span>
                 <input
-                  value={form.contributorName}
+                  value={accountName || form.contributorName}
+                  readOnly={isLoggedIn}
                   onChange={(event) => updateField('contributorName', event.target.value)}
-                  className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500"
-                  placeholder="Vegetarox"
+                  className={`mt-2 w-full rounded-xl border px-4 py-3 text-slate-100 outline-none ${isLoggedIn ? 'bg-slate-900/70 border-green-500/30 cursor-not-allowed' : 'bg-slate-950/70 border-slate-700 focus:border-green-500'}`}
+                  placeholder="Your creator name"
                 />
+                {isLoggedIn && <p className="mt-2 text-xs text-slate-500">Change this in your Account profile if needed.</p>}
               </label>
               <label className="block">
                 <span className="text-sm font-bold text-slate-300">Discord / Contact</span>
                 <input
-                  value={form.contact}
+                  value={form.contact || accountContact}
                   onChange={(event) => updateField('contact', event.target.value)}
                   className="mt-2 w-full rounded-xl bg-slate-950/70 border border-slate-700 px-4 py-3 text-slate-100 outline-none focus:border-green-500"
                   placeholder="Discord, X, YouTube, etc."
