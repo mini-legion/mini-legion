@@ -30,6 +30,32 @@ export interface AdminBuildSubmission {
   updated_at: string;
 }
 
+export interface AdminBuildEditRequest {
+  id: string;
+  build_id: string;
+  user_id: string;
+  status: 'pending' | 'reviewing' | 'approved' | 'rejected';
+  request_notes: string | null;
+  review_notes: string | null;
+  proposed_title: string | null;
+  proposed_description: string | null;
+  proposed_spec: string | null;
+  proposed_role: 'DPS' | 'Healer' | 'Tank' | null;
+  proposed_content_type: string[];
+  proposed_intro_text: string | null;
+  proposed_talent_tips: string | null;
+  proposed_image: string | null;
+  proposed_images: Record<string, string>;
+  created_at: string;
+  updated_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  current_title: string;
+  hero_class: string;
+  current_spec: string | null;
+  author: string;
+}
+
 export interface AdminBuildImages {
   skills?: string;
   tree1?: string;
@@ -75,6 +101,7 @@ export interface AdminGuideRow {
 
 export interface AdminDashboardData {
   submissions: AdminBuildSubmission[];
+  editRequests: AdminBuildEditRequest[];
   builds: AdminBuildRow[];
   guides: AdminGuideRow[];
 }
@@ -142,6 +169,22 @@ export async function updateSubmissionStatus(
   const { error } = await (supabase as any).rpc('admin_update_submission_status', {
     p_token: token,
     p_id: id,
+    p_status: status,
+    p_review_notes: reviewNotes,
+  });
+
+  if (error) throw error;
+}
+
+export async function updateBuildEditRequestStatus(
+  token: string,
+  id: string,
+  status: 'reviewing' | 'approved' | 'rejected',
+  reviewNotes: string | null = null
+) {
+  const { error } = await (supabase as any).rpc('admin_review_build_edit_request', {
+    p_token: token,
+    p_request_id: id,
     p_status: status,
     p_review_notes: reviewNotes,
   });
