@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/UI';
 import { MyBuildSubmissions } from '../components/MyBuildSubmissions';
+import { MyPublishedBuilds } from '../components/MyPublishedBuilds';
 import { AccountAdminManager } from '../components/AccountAdminManager';
 import { useAuth } from '../lib/auth';
 
@@ -92,6 +93,11 @@ export const AccountPage = () => {
                 Admin Account
               </span>
             )}
+            {profile?.role === 'creator' && (
+              <span className="rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-green-300">
+                Creator Account
+              </span>
+            )}
           </div>
 
           {message && <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-300 text-sm font-semibold">{message}</div>}
@@ -131,6 +137,7 @@ export const AccountPage = () => {
 
         {profile?.role === 'admin' && <AccountAdminManager />}
 
+        <MyPublishedBuilds />
         <MyBuildSubmissions />
       </div>
     </div>
