@@ -11,13 +11,17 @@ export type Json =
 
 // Tipos de secciones de guías
 export interface GuideSection {
-  type: 'tips' | 'steps' | 'text' | 'image' | 'table' | 'warning' | 'note'
+  type: 'tips' | 'steps' | 'text' | 'image' | 'video' | 'table' | 'warning' | 'note'
   title?: string
   content?: string
   tips?: { title: string; description: string }[]
   steps?: { step: number; title: string; description: string }[]
   image?: string
   imageCaption?: string
+  videoUrl?: string
+  videoTitle?: string
+  videoCreator?: string
+  videoCreatorUrl?: string
   tableHeaders?: string[]
   tableRows?: string[][]
 }
@@ -138,368 +142,125 @@ export interface SubRaid {
   gearDrop: number | string
   importantDrop: string
   description?: string
-  rewards?: string[]
-  stats?: RaidStats
+}
+
+export interface RaidMechanic {
+  title: string
+  description: string
+  icon?: string
+}
+
+export interface RaidReward {
+  name: string
+  type?: string
+  image?: string
+  dropRate?: string
+}
+
+export interface Guide {
+  id: string
+  slug: string
+  title: string
+  subtitle?: string
+  description: string
+  category: string
+  subcategory: string
+  image?: string
+  author: string
+  date: string
+  read_time: string
+  tags: string[]
+  sections: GuideSection[]
+  created_at: string
+  updated_at: string
+}
+
+export interface Build {
+  id: string
+  title: string
+  description: string
+  hero_class: string
+  spec: string
+  role?: 'DPS' | 'Healer' | 'Tank'
+  tier: 'S' | 'A' | 'B' | 'C'
+  content_type: string[]
+  image?: string
+  images: BuildImages
+  author: string
+  likes: number
+  intro_text?: string
+  sections?: unknown
+  runes: BuildRune[]
+  gear_guide: BuildGearGuide
+  refines_guide: BuildRefinesGuide
+  spells_guide: BuildSpellGuide[]
+  autocast_order: string[]
+  healing_tips: string[]
+  talent_tips?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Raid {
+  id: string
+  title: string
+  description: string
+  category: string
+  subcategory: string
+  difficulty: string
+  min_level: number
+  recommended_gear: string
+  image?: string
   bosses: Boss[]
+  sub_raids?: SubRaid[]
+  mechanics: RaidMechanic[]
+  rewards: RaidReward[]
+  tips: string[]
+  created_at: string
+  updated_at: string
 }
 
-// Database schema
-export interface Database {
-  public: {
-    Tables: {
-      categories: {
-        Row: {
-          id: string
-          name: string
-          icon: string | null
-          description: string | null
-          created_at: string
-        }
-        Insert: {
-          id: string
-          name: string
-          icon?: string | null
-          description?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          icon?: string | null
-          description?: string | null
-          created_at?: string
-        }
-      }
-      subcategories: {
-        Row: {
-          id: string
-          category_id: string | null
-          name: string
-          icon: string | null
-          description: string | null
-          item_count: number
-          created_at: string
-        }
-        Insert: {
-          id: string
-          category_id?: string | null
-          name: string
-          icon?: string | null
-          description?: string | null
-          item_count?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          category_id?: string | null
-          name?: string
-          icon?: string | null
-          description?: string | null
-          item_count?: number
-          created_at?: string
-        }
-      }
-      guides: {
-        Row: {
-          id: string
-          slug: string
-          title: string
-          subtitle: string | null
-          description: string | null
-          category: string
-          subcategory: string
-          image: string | null
-          author: string
-          date: string
-          read_time: string | null
-          tags: string[]
-          sections: GuideSection[]
-          related_guides: string[]
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          slug: string
-          title: string
-          subtitle?: string | null
-          description?: string | null
-          category: string
-          subcategory: string
-          image?: string | null
-          author: string
-          date?: string
-          read_time?: string | null
-          tags?: string[]
-          sections?: GuideSection[]
-          related_guides?: string[]
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          slug?: string
-          title?: string
-          subtitle?: string | null
-          description?: string | null
-          category?: string
-          subcategory?: string
-          image?: string | null
-          author?: string
-          date?: string
-          read_time?: string | null
-          tags?: string[]
-          sections?: GuideSection[]
-          related_guides?: string[]
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      builds: {
-        Row: {
-          id: string
-          hero_class: string
-          spec: string | null
-          title: string
-          description: string | null
-          author: string
-          tier: 'S' | 'A' | 'B' | 'C'
-          content_type: string[]
-          role: 'DPS' | 'Healer' | 'Tank' | null
-          likes: number
-          image: string | null
-          images: BuildImages
-          runes: BuildRune[]
-          gear_guide: BuildGearGuide
-          refines_guide: BuildRefinesGuide
-          spells_guide: BuildSpellGuide[]
-          healing_tips: string[]
-          autocast_order: string[]
-          talent_tips: string | null
-          intro_text: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          hero_class: string
-          spec?: string | null
-          title: string
-          description?: string | null
-          author: string
-          tier?: 'S' | 'A' | 'B' | 'C'
-          content_type?: string[]
-          role?: 'DPS' | 'Healer' | 'Tank' | null
-          likes?: number
-          image?: string | null
-          images?: BuildImages
-          runes?: BuildRune[]
-          gear_guide?: BuildGearGuide
-          refines_guide?: BuildRefinesGuide
-          spells_guide?: BuildSpellGuide[]
-          healing_tips?: string[]
-          autocast_order?: string[]
-          talent_tips?: string | null
-          intro_text?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          hero_class?: string
-          spec?: string | null
-          title?: string
-          description?: string | null
-          author?: string
-          tier?: 'S' | 'A' | 'B' | 'C'
-          content_type?: string[]
-          role?: 'DPS' | 'Healer' | 'Tank' | null
-          likes?: number
-          image?: string | null
-          images?: BuildImages
-          runes?: BuildRune[]
-          gear_guide?: BuildGearGuide
-          refines_guide?: BuildRefinesGuide
-          spells_guide?: BuildSpellGuide[]
-          healing_tips?: string[]
-          autocast_order?: string[]
-          talent_tips?: string | null
-          intro_text?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      raids: {
-        Row: {
-          id: string
-          name: string
-          difficulty: 'Normal' | 'Hard' | 'Extreme' | 'Heroic' | 'Mythic' | 'Abyss'
-          subcategory: string
-          min_level: number | null
-          rewards: string[]
-          description: string | null
-          image: string | null
-          stats: RaidStats
-          subraids: SubRaid[]
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          name: string
-          difficulty: 'Normal' | 'Hard' | 'Extreme' | 'Heroic' | 'Mythic' | 'Abyss'
-          subcategory: string
-          min_level?: number | null
-          rewards?: string[]
-          description?: string | null
-          image?: string | null
-          stats?: RaidStats
-          subraids?: SubRaid[]
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          difficulty?: 'Normal' | 'Hard' | 'Extreme' | 'Heroic' | 'Mythic' | 'Abyss'
-          subcategory?: string
-          min_level?: number | null
-          rewards?: string[]
-          description?: string | null
-          image?: string | null
-          stats?: RaidStats
-          subraids?: SubRaid[]
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      codes: {
-        Row: {
-          id: string
-          code: string
-          rewards: string[]
-          expires_at: string | null
-          is_active: boolean
-          date_added: string
-          created_at: string
-        }
-        Insert: {
-          id: string
-          code: string
-          rewards?: string[]
-          expires_at?: string | null
-          is_active?: boolean
-          date_added?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          code?: string
-          rewards?: string[]
-          expires_at?: string | null
-          is_active?: boolean
-          date_added?: string
-          created_at?: string
-        }
-      }
-      content_creators: {
-        Row: {
-          id: string
-          name: string
-          platform: 'YouTube' | 'Twitch' | 'TikTok' | 'Twitter' | 'Discord'
-          avatar: string | null
-          followers: string | null
-          description: string | null
-          url: string | null
-          featured: boolean
-          youtube_channel_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id: string
-          name: string
-          platform: 'YouTube' | 'Twitch' | 'TikTok' | 'Twitter' | 'Discord'
-          avatar?: string | null
-          followers?: string | null
-          description?: string | null
-          url?: string | null
-          featured?: boolean
-          youtube_channel_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          platform?: 'YouTube' | 'Twitch' | 'TikTok' | 'Twitter' | 'Discord'
-          avatar?: string | null
-          followers?: string | null
-          description?: string | null
-          url?: string | null
-          featured?: boolean
-          youtube_channel_id?: string | null
-          created_at?: string
-        }
-      }
-      roadmap_items: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          status: 'planned' | 'in-progress' | 'completed'
-          date: string | null
-          version: string | null
-          created_at: string
-        }
-        Insert: {
-          id: string
-          title: string
-          description?: string | null
-          status?: 'planned' | 'in-progress' | 'completed'
-          date?: string | null
-          version?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          status?: 'planned' | 'in-progress' | 'completed'
-          date?: string | null
-          version?: string | null
-          created_at?: string
-        }
-      }
-    }
-  }
+export interface Code {
+  id: string
+  code: string
+  rewards: string
+  description: string
+  date_added: string
+  expiry_date?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
-// Type helpers para usar en el código
-export type Guide = Database['public']['Tables']['guides']['Row']
-export type GuideInsert = Database['public']['Tables']['guides']['Insert']
-export type Build = Database['public']['Tables']['builds']['Row']
-export type BuildInsert = Database['public']['Tables']['builds']['Insert']
-export type Raid = Database['public']['Tables']['raids']['Row']
-export type RaidInsert = Database['public']['Tables']['raids']['Insert']
-export type Code = Database['public']['Tables']['codes']['Row']
-export type CodeInsert = Database['public']['Tables']['codes']['Insert']
-export type ContentCreator = Database['public']['Tables']['content_creators']['Row']
-export type RoadmapItem = Database['public']['Tables']['roadmap_items']['Row']
+export interface ContentCreator {
+  id: string
+  name: string
+  platform: string
+  avatar?: string | null
+  followers?: string
+  description: string
+  url: string
+  featured: boolean
+  youtube_channel_id?: string | null
+  created_at: string
+}
 
-// Gear Collection type (matches CSV import column names)
+export interface RoadmapItem {
+  id: string
+  title: string
+  description: string
+  status: 'planned' | 'in-progress' | 'completed'
+  date: string
+  version?: string
+  image?: string
+  created_at: string
+}
+
 export interface GearCollection {
-  'Collection Status': string
   'Gear Collection Name': string
-  'Drop Item Name': string | null
-  'Location': string | null
-  'Affix': string | null
-  'Attribute 1': string | null
-  'Attribute 2': string | null
-  'Affix Type': string | null
-  'Affix Value': string | null
-  'Upstar Item': string | null
-  'Attribute Type': string | null
-  'Attribute Value': number | null
-  'Attribute 2 Type': string | null
-  'Attribute 2 Value': number | null
-  'Upgrade Item': string | null
+  'Set Bonus 2 Pieces': string
+  'Set Bonus 4 Pieces': string
+  'Location': string
+  'Boss': string
+  'Gear Drop': string
 }
