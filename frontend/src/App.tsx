@@ -1,6 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home, Guides, GuideDetail, Builds, BuildDetail, Collections, Raids, RaidDetail, Roadmap, Codes, ContentCreators } from './pages';
+import { Home } from './pages/Home';
+import { Guides } from './pages/Guides';
+import { GuideDetail } from './pages/GuideDetail';
+import { Builds } from './pages/Builds';
+import { BuildDetail } from './pages/BuildDetail';
+import { Collections } from './pages/Collections';
+import { Raids } from './pages/Raids';
+import { RaidDetail } from './pages/RaidDetail';
+import { Roadmap } from './pages/Roadmap';
+import { Codes } from './pages/Codes';
+import { ContentCreators } from './pages/ContentCreators';
 import { PublicUnavailable } from './components/Layout/PublicUnavailable';
 import ScrollToTop from './components/ScrollToTop';
 
