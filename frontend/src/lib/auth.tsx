@@ -4,6 +4,10 @@ import type { ReactNode } from 'react';
 export interface AuthUser {
   id: string;
   email: string | null;
+  user_metadata?: {
+    display_name?: string;
+    marketing_opt_in?: boolean;
+  };
 }
 
 export interface AuthSession {
