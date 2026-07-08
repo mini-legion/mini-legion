@@ -1,7 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+
+export interface AuthUser {
+  id: string;
+  email: string | null;
+}
+
+export interface AuthSession {
+  user: AuthUser;
+}
 
 export interface UserProfile {
   id: string;
@@ -14,9 +21,15 @@ export interface UserProfile {
   updated_at?: string;
 }
 
+interface AuthResponse {
+  user: AuthUser | null;
+  profile: UserProfile | null;
+  error?: string;
+}
+
 interface AuthContextValue {
-  session: Session | null;
-  user: User | null;
+  session: AuthSession | null;
+  user: AuthUser | null;
   profile: UserProfile | null;
   loading: boolean;
   signUp: (params: { email: string; password: string; displayName: string; marketingOptIn: boolean }) => Promise<void>;
@@ -27,109 +40,59 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AUTH_ENDPOINT = '/.netlify/functions/auth';
 
-async function getProfile(userId: string): Promise<UserProfile | null> {
-  const { data, error } = await (supabase as any)
-    .from('profiles')
-    .select('id, email, display_name, discord, marketing_opt_in, role, created_at, updated_at')
-    .eq('id', userId)
-    .maybeSingle();
+async function authRequest(action: string, options?: RequestInit): Promise<AuthResponse> {
+  const response = await fetch(`${AUTH_ENDPOINT}?action=${encodeURIComponent(action)}`, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.headers || {}),
+    },
+  });
 
-  if (error) throw error;
-  return data as UserProfile | null;
-}
-
-async function ensureProfile(user: User): Promise<UserProfile | null> {
-  const existing = await getProfile(user.id);
-  if (existing) return existing;
-
-  const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
-  const marketingOptIn = Boolean(user.user_metadata?.marketing_opt_in);
-
-  const { data, error } = await (supabase as any)
-    .from('profiles')
-    .insert({
-      id: user.id,
-      email: user.email,
-      display_name: displayName,
-      marketing_opt_in: marketingOptIn,
-    })
-    .select('id, email, display_name, discord, marketing_opt_in, role, created_at, updated_at')
-    .single();
-
-  if (error) throw error;
-  return data as UserProfile;
+  const data = await response.json().catch(() => ({ error: 'Authentication service returned an invalid response.' })) as AuthResponse;
+  if (!response.ok) throw new Error(data.error || 'Authentication failed.');
+  return data;
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const user = session?.user ?? null;
+  const session = user ? { user } : null;
 
-  const loadProfile = async (nextUser: User | null) => {
-    if (!nextUser) {
-      setProfile(null);
-      return;
-    }
+  const applyAuth = (data: AuthResponse) => {
+    setUser(data.user || null);
+    setProfile(data.profile || null);
+  };
 
-    try {
-      const nextProfile = await ensureProfile(nextUser);
-      setProfile(nextProfile);
-    } catch {
-      setProfile(null);
-    }
+  const refreshProfile = async () => {
+    const data = await authRequest('me');
+    applyAuth(data);
   };
 
   useEffect(() => {
     let mounted = true;
-    let finished = false;
 
-    const finishLoading = () => {
-      if (!mounted || finished) return;
-      finished = true;
-      setLoading(false);
-    };
-
-    const fallbackTimer = window.setTimeout(() => {
-      finishLoading();
-    }, 3000);
-
-    const initializeAuth = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (!mounted) return;
-
-        setSession(data.session);
-        finishLoading();
-
-        // Profile loading should not block protected pages. If it fails, the user can still submit builds.
-        loadProfile(data.session?.user ?? null);
-      } catch {
-        if (!mounted) return;
-        setSession(null);
-        setProfile(null);
-        finishLoading();
-      }
-    };
-
-    initializeAuth();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setLoading(false);
-
-      // Avoid doing extra Supabase requests inside the auth callback stack.
-      window.setTimeout(() => {
-        loadProfile(nextSession?.user ?? null);
-      }, 0);
-    });
+    authRequest('me')
+      .then((data) => {
+        if (mounted) applyAuth(data);
+      })
+      .catch(() => {
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+        }
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
       mounted = false;
-      window.clearTimeout(fallbackTimer);
-      listener.subscription.unsubscribe();
     };
   }, []);
 
@@ -139,45 +102,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profile,
     loading,
     signUp: async ({ email, password, displayName, marketingOptIn }) => {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/account`,
-          data: {
-            display_name: displayName,
-            marketing_opt_in: marketingOptIn,
-          },
-        },
+      const data = await authRequest('signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, displayName, marketingOptIn }),
       });
-
-      if (error) throw error;
+      applyAuth(data);
     },
     signIn: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const data = await authRequest('signin', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      applyAuth(data);
     },
     signOut: async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await authRequest('signout', { method: 'POST', body: '{}' });
+      setUser(null);
       setProfile(null);
     },
-    refreshProfile: async () => {
-      if (!user) return;
-      await loadProfile(user);
-    },
+    refreshProfile,
     updateProfile: async (updates) => {
       if (!user) throw new Error('You must be logged in.');
-
-      const { data, error } = await (supabase as any)
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select('id, email, display_name, discord, marketing_opt_in, role, created_at, updated_at')
-        .single();
-
-      if (error) throw error;
-      setProfile(data as UserProfile);
+      const data = await authRequest('update-profile', {
+        method: 'POST',
+        body: JSON.stringify(updates),
+      });
+      applyAuth(data);
     },
   }), [session, user, profile, loading]);
 
