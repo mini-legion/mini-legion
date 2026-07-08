@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo-minilegion.png";
+import { useAuth } from "../../lib/auth";
 
 const navItems = [
   { name: "Home", path: "/", icon: "🏠" },
@@ -19,6 +20,10 @@ const creditName = "Vegetarox";
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, profile } = useAuth();
+  const accountPath = user ? "/account" : "/login";
+  const accountLabel = user ? (profile?.display_name || "Account") : "Login";
+  const accountIcon = user ? "👤" : "🔐";
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -59,7 +64,18 @@ export const Navbar = () => {
               ))}
             </div>
 
-            <div className="hidden md:flex items-center">
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                to={accountPath}
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
+                  isActive(accountPath)
+                    ? "bg-green-500/20 text-green-400 shadow-lg shadow-green-500/10"
+                    : "text-slate-300 hover:text-green-400 hover:bg-slate-700/50"
+                }`}
+              >
+                <span>{accountIcon}</span>
+                <span className="max-w-[96px] truncate">{accountLabel}</span>
+              </Link>
               <span className="text-slate-400 text-sm">
                 Made by:{" "}
                 <a href={creditLink} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 font-medium transition-colors hover:underline">
@@ -86,7 +102,7 @@ export const Navbar = () => {
           </div>
         </div>
 
-        <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "max-h-[720px] opacity-100" : "max-h-0 opacity-0"}`}>
+        <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "max-h-[820px] opacity-100" : "max-h-0 opacity-0"}`}>
           <div className="px-4 py-4 bg-slate-900/95 border-t border-slate-700/50">
             <div className="mb-4 text-center">
               <span className="text-slate-400 text-sm">
@@ -113,6 +129,18 @@ export const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
+              <Link
+                to={accountPath}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-3 ${
+                  isActive(accountPath)
+                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                    : "text-slate-300 bg-slate-800/50 border border-slate-700/50 hover:text-green-400 hover:border-green-500/30"
+                }`}
+              >
+                <span className="text-lg">{accountIcon}</span>
+                {accountLabel}
+              </Link>
             </div>
           </div>
         </div>
