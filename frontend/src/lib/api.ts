@@ -1,286 +1,183 @@
-import { supabase } from './supabase'
+import { getPublicData } from './static-data'
 import type { Guide, Build, Raid, Code, ContentCreator, RoadmapItem, GearCollection } from './database.types'
 
+function byDateDesc(a: string | null | undefined, b: string | null | undefined) {
+  return new Date(b || 0).getTime() - new Date(a || 0).getTime()
+}
+
+function byName(a: string | null | undefined, b: string | null | undefined) {
+  return (a || '').localeCompare(b || '')
+}
+
 // ============================================
-// GUIDES API
+// GUIDES API — STATIC CDN DATA
 // ============================================
 
 export async function getGuides() {
-  const { data, error } = await supabase
-    .from('guides')
-    .select('*')
-    .order('date', { ascending: false })
-
-  if (error) throw error
-  return data as Guide[]
+  const data = await getPublicData()
+  return [...data.guides].sort((a, b) => byDateDesc(a.date, b.date)) as Guide[]
 }
 
 export async function getGuidesBySubcategory(subcategory: string) {
-  const { data, error } = await supabase
-    .from('guides')
-    .select('*')
-    .eq('subcategory', subcategory)
-    .order('date', { ascending: false })
-
-  if (error) throw error
-  return data as Guide[]
+  const guides = await getGuides()
+  return guides.filter((guide) => guide.subcategory === subcategory)
 }
 
 export async function getGuideBySlug(slug: string) {
-  const { data, error } = await supabase
-    .from('guides')
-    .select('*')
-    .eq('slug', slug)
-    .single()
-
-  if (error) throw error
-  return data as Guide
+  const data = await getPublicData()
+  const guide = data.guides.find((item) => item.slug === slug)
+  if (!guide) throw new Error('Guide not found')
+  return guide as Guide
 }
 
 export async function getGuideById(id: string) {
-  const { data, error } = await supabase
-    .from('guides')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as Guide
+  const data = await getPublicData()
+  const guide = data.guides.find((item) => item.id === id)
+  if (!guide) throw new Error('Guide not found')
+  return guide as Guide
 }
 
 // ============================================
-// BUILDS API
+// BUILDS API — STATIC CDN DATA
 // ============================================
 
 export async function getBuilds() {
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data as Build[]
+  const data = await getPublicData()
+  return [...data.builds].sort((a, b) => byDateDesc(a.created_at, b.created_at)) as Build[]
 }
 
 export async function getLatestBuilds(limit = 6) {
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) throw error
-  return data as Build[]
+  const builds = await getBuilds()
+  return builds.slice(0, limit)
 }
 
 export async function getMostViewedBuilds(limit = 6) {
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .order('view_count', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) throw error
-  return data as Build[]
+  const data = await getPublicData()
+  return [...data.builds]
+    .sort((a, b) => {
+      const viewsA = Number((a as Build & { view_count?: number }).view_count || 0)
+      const viewsB = Number((b as Build & { view_count?: number }).view_count || 0)
+      return viewsB - viewsA || byDateDesc(a.created_at, b.created_at)
+    })
+    .slice(0, limit) as Build[]
 }
 
 export async function trackBuildView(id: string) {
   if (!id) return 0
-
-  const { data, error } = await (supabase as any).rpc('increment_build_view', {
-    p_build_id: id,
-  })
-
-  if (error) return 0
-  return data as number
+  const data = await getPublicData()
+  const build = data.builds.find((item) => item.id === id) as (Build & { view_count?: number }) | undefined
+  return Number(build?.view_count || 0)
 }
 
 export async function getBuildsByClass(heroClass: string) {
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .ilike('hero_class', heroClass)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data as Build[]
+  const builds = await getBuilds()
+  return builds.filter((build) => build.hero_class.toLowerCase() === heroClass.toLowerCase())
 }
 
 export async function getBuildById(id: string) {
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as Build
+  const data = await getPublicData()
+  const build = data.builds.find((item) => item.id === id)
+  if (!build) throw new Error('Build not found')
+  return build as Build
 }
 
 export async function getBuildsByTier(tier: 'S' | 'A' | 'B' | 'C') {
-  const { data, error } = await supabase
-    .from('builds')
-    .select('*')
-    .eq('tier', tier)
-
-  if (error) throw error
-  return data as Build[]
+  const builds = await getBuilds()
+  return builds.filter((build) => build.tier === tier)
 }
 
 // ============================================
-// RAIDS API
+// RAIDS API — STATIC CDN DATA
 // ============================================
 
 export async function getRaids() {
-  const { data, error } = await supabase
-    .from('raids')
-    .select('*')
-    .order('min_level', { ascending: true })
-
-  if (error) throw error
-  return data as Raid[]
+  const data = await getPublicData()
+  return [...data.raids].sort((a, b) => Number(a.min_level || 0) - Number(b.min_level || 0)) as Raid[]
 }
 
 export async function getRaidsBySubcategory(subcategory: string) {
-  const { data, error } = await supabase
-    .from('raids')
-    .select('*')
-    .eq('subcategory', subcategory)
-    .order('min_level', { ascending: true })
-
-  if (error) throw error
-  return data as Raid[]
+  const raids = await getRaids()
+  return raids.filter((raid) => raid.subcategory === subcategory)
 }
 
 export async function getRaidsByDifficulty(difficulty: string) {
-  const { data, error } = await supabase
-    .from('raids')
-    .select('*')
-    .eq('difficulty', difficulty)
-    .order('min_level', { ascending: true })
-
-  if (error) throw error
-  return data as Raid[]
+  const raids = await getRaids()
+  return raids.filter((raid) => raid.difficulty === difficulty)
 }
 
 export async function getRaidById(id: string) {
-  const { data, error } = await supabase
-    .from('raids')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as Raid
+  const data = await getPublicData()
+  const raid = data.raids.find((item) => item.id === id)
+  if (!raid) throw new Error('Raid not found')
+  return raid as Raid
 }
 
 // ============================================
-// CODES API
+// CODES API — STATIC CDN DATA
 // ============================================
 
 export async function getCodes() {
-  const { data, error } = await supabase
-    .from('codes')
-    .select('*')
-    .order('date_added', { ascending: false })
-
-  if (error) throw error
-  return data as Code[]
+  const data = await getPublicData()
+  return [...data.codes].sort((a, b) => byDateDesc(a.date_added, b.date_added)) as Code[]
 }
 
 export async function getActiveCodes() {
-  const { data, error } = await supabase
-    .from('codes')
-    .select('*')
-    .eq('is_active', true)
-    .order('date_added', { ascending: false })
-
-  if (error) throw error
-  return data as Code[]
+  const codes = await getCodes()
+  return codes.filter((code) => code.is_active)
 }
 
 // ============================================
-// CONTENT CREATORS API
+// CONTENT CREATORS API — STATIC CDN DATA
 // ============================================
 
 export async function getContentCreators() {
-  const { data, error } = await supabase
-    .from('content_creators')
-    .select('*')
-    .order('featured', { ascending: false })
-
-  if (error) throw error
-  return data as ContentCreator[]
+  const data = await getPublicData()
+  return [...data.content_creators].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured))) as ContentCreator[]
 }
 
 export async function getFeaturedCreators() {
-  const { data, error } = await supabase
-    .from('content_creators')
-    .select('*')
-    .eq('featured', true)
-
-  if (error) throw error
-  return data as ContentCreator[]
+  const creators = await getContentCreators()
+  return creators.filter((creator) => creator.featured)
 }
 
 // ============================================
-// ROADMAP API
+// ROADMAP API — STATIC CDN DATA
 // ============================================
 
 export async function getRoadmapItems() {
-  const { data, error } = await supabase
-    .from('roadmap_items')
-    .select('*')
-    .order('date', { ascending: false })
-
-  if (error) throw error
-  return data as RoadmapItem[]
+  const data = await getPublicData()
+  return [...data.roadmap_items].sort((a, b) => byDateDesc(a.date, b.date)) as RoadmapItem[]
 }
 
 export async function getRoadmapByStatus(status: 'planned' | 'in-progress' | 'completed') {
-  const { data, error } = await supabase
-    .from('roadmap_items')
-    .select('*')
-    .eq('status', status)
-    .order('date', { ascending: false })
-
-  if (error) throw error
-  return data as RoadmapItem[]
+  const items = await getRoadmapItems()
+  return items.filter((item) => item.status === status)
 }
 
 // ============================================
-// GEAR COLLECTIONS API
+// GEAR COLLECTIONS API — STATIC CDN DATA
 // ============================================
 
 export async function getGearCollections() {
-  const { data, error } = await supabase
-    .from('collections')
-    .select('*')
-    .order('Gear Collection Name', { ascending: true })
-
-  if (error) throw error
-  return data as GearCollection[]
+  const data = await getPublicData()
+  return [...data.collections].sort((a, b) => byName(a['Gear Collection Name'], b['Gear Collection Name'])) as GearCollection[]
 }
 
 export async function getGearCollectionsByLocation(location: string) {
-  const { data, error } = await supabase
-    .from('collections')
-    .select('*')
-    .eq('Location', location)
-    .order('Gear Collection Name', { ascending: true })
-
-  if (error) throw error
-  return data as GearCollection[]
+  const collections = await getGearCollections()
+  return collections.filter((item) => item['Location'] === location)
 }
 
 // ============================================
 // STORAGE HELPERS
 // ============================================
 
+const SUPABASE_STORAGE_PREFIX = 'https://mmjplyofgdpaqajaxjbc.supabase.co/storage/'
+
 export const storage = {
   getUrl: (path: string | null | undefined) => {
     if (!path) return null
+    if (path.startsWith(SUPABASE_STORAGE_PREFIX)) return null
     if (path.includes('://')) return path
     return `/images/${path}`
   },
@@ -312,7 +209,7 @@ export const storage = {
 }
 
 // ============================================
-// SUBCATEGORIES (Static data - these rarely change)
+// SUBCATEGORIES
 // ============================================
 
 export const guidesSubcategories = [
@@ -333,7 +230,6 @@ export const buildsSubcategories = [
   { id: 'druid', name: 'Druid', icon: '🌿', description: 'Nature, healing and hybrid builds' },
 ]
 
-// Raid icons served locally to reduce Supabase egress
 export const raidsSubcategories = [
   { id: 'normal', name: 'Normal', icon: '/images/raids/normal.png', description: 'Standard events designed to be completed solo with a single character.', itemCount: 11 },
   { id: 'heroic', name: 'Heroic', icon: '/images/raids/heroic.png', description: 'Challenging events you can tackle solo with your 5 characters or team up with other players to complete.', itemCount: 17 },
