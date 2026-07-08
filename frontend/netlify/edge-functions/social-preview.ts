@@ -1,8 +1,6 @@
-declare const Netlify: any;
-declare const Deno: any;
-
 const SITE_URL = 'https://minilegionguides.com';
 const DEFAULT_IMAGE = `${SITE_URL}/images/og/mini-legion-og.svg`;
+const SUPABASE_STORAGE_PREFIX = 'https://mmjplyofgdpaqajaxjbc.supabase.co/storage/';
 
 const BOT_PATTERN = /(discordbot|twitterbot|facebookexternalhit|slackbot|telegrambot|whatsapp|linkedinbot|pinterest|embedly|quora link preview|vkshare|redditbot|skypeuripreview|applebot)/i;
 
@@ -13,25 +11,14 @@ type PreviewData = {
   type?: string;
 };
 
-function getEnv(key: string) {
-  try {
-    if (typeof Netlify !== 'undefined' && Netlify?.env?.get) {
-      return Netlify.env.get(key);
-    }
-  } catch {
-    // Ignore and try Deno.
-  }
+type DataRow = Record<string, any>;
+type PublicData = {
+  guides: DataRow[];
+  builds: DataRow[];
+  raids: DataRow[];
+};
 
-  try {
-    if (typeof Deno !== 'undefined' && Deno?.env?.get) {
-      return Deno.env.get(key);
-    }
-  } catch {
-    // Ignore missing env access.
-  }
-
-  return undefined;
-}
+let publicDataPromise: Promise<PublicData> | null = null;
 
 function escapeHtml(value: string) {
   return value
@@ -43,7 +30,7 @@ function escapeHtml(value: string) {
 }
 
 function absoluteUrl(path?: string | null) {
-  if (!path) return DEFAULT_IMAGE;
+  if (!path || path.startsWith(SUPABASE_STORAGE_PREFIX)) return DEFAULT_IMAGE;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   if (path.startsWith('/')) return `${SITE_URL}${path}`;
   return `${SITE_URL}/images/${path}`;
@@ -54,24 +41,42 @@ function cleanDescription(value?: string | null) {
   return (value || fallback).replace(/\s+/g, ' ').trim().slice(0, 240);
 }
 
-async function fetchSingle(table: string, id: string) {
-  const supabaseUrl = getEnv('VITE_SUPABASE_URL');
-  const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
+async function fetchArchivePart(path: string) {
+  const response = await fetch(`${SITE_URL}${path}`);
+  if (!response.ok) throw new Error(`Could not load ${path}: ${response.status}`);
+  return response.text();
+}
 
-  if (!supabaseUrl || !supabaseAnonKey) return null;
+async function loadPublicData(): Promise<PublicData> {
+  if (!publicDataPromise) {
+    publicDataPromise = (async () => {
+      const [part0, part1] = await Promise.all([
+        fetchArchivePart('/data/public-data.00.b64'),
+        fetchArchivePart('/data/public-data.01.b64'),
+      ]);
 
-  const url = `${supabaseUrl}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}&select=*`;
-  const response = await fetch(url, {
-    headers: {
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${supabaseAnonKey}`,
-    },
-  });
+      const encoded = `${part0.trim()}${part1.trim()}`;
+      const binary = atob(encoded);
+      const bytes = new Uint8Array(binary.length);
 
-  if (!response.ok) return null;
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
 
-  const rows = await response.json();
-  return Array.isArray(rows) ? rows[0] : null;
+      const stream = new Blob([bytes])
+        .stream()
+        .pipeThrough(new DecompressionStream('gzip'));
+      const json = await new Response(stream).text();
+      return JSON.parse(json) as PublicData;
+    })();
+  }
+
+  return publicDataPromise;
+}
+
+async function fetchSingle(table: keyof PublicData, id: string) {
+  const data = await loadPublicData();
+  return data[table].find((row) => String(row.id) === id) || null;
 }
 
 async function getPreviewData(pathname: string): Promise<PreviewData | null> {
