@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Legion Migration</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #020617; color: #e2e8f0; padding: 24px; }
+    main { width: min(720px, 100%); background: #0f172a; border: 1px solid #334155; border-radius: 24px; padding: 28px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }
+    h1 { margin: 0 0 10px; font-size: clamp(28px, 5vw, 46px); }
+    p { color: #94a3b8; line-height: 1.55; }
+    label { display: block; margin-top: 20px; margin-bottom: 8px; font-weight: 700; }
+    input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #475569; background: #020617; color: #fff; font-size: 16px; }
+    button { width: 100%; margin-top: 22px; padding: 15px 18px; border: 0; border-radius: 12px; background: #f59e0b; color: #111827; font-size: 17px; font-weight: 900; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
+    pre { margin-top: 22px; min-height: 140px; white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; border-radius: 14px; background: #020617; border: 1px solid #1e293b; color: #cbd5e1; }
+    .ok { color: #4ade80; }
+    .warn { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>⚔️ Mini Legion Migration</h1>
+    <p>Temporary migration tool. Select the Supabase CSV export, enter the migration token and start the transfer.</p>
+
+    <label for="file">1. Supabase CSV</label>
+    <input id="file" type="file" accept=".csv,text/csv" />
+
+    <label for="token">2. Migration token</label>
+    <input id="token" type="password" autocomplete="off" placeholder="Paste MIGRATION_TOKEN" />
+
+    <button id="start">3. Start migration</button>
+    <pre id="log">Waiting…</pre>
+  </main>
+
+  <script>
+    const EXPECTED = {
+      guides: 26,
+      builds: 18,
+      raids: 31,
+      codes: 14,
+      collections: 314,
+      content_creators: 2,
+      roadmap_items: 6,
+    };
+
+    const log = document.getElementById('log');
+    const button = document.getElementById('start');
+
+    function parseSupabaseCsv(text) {
+      const firstBreak = text.indexOf('\n');
+      if (firstBreak < 0 || text.slice(0, firstBreak).trim() !== 'mini_legion_backup') {
+        throw new Error('Wrong CSV file. Expected the mini_legion_backup export.');
+      }
+
+      let field = text.slice(firstBreak + 1).trim();
+      if (field.startsWith('"') && field.endsWith('"')) {
+        field = field.slice(1, -1).replace(/""/g, '"');
+      }
+      return JSON.parse(field);
+    }
+
+    function add(message) {
+      log.textContent += `${message}\n`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    button.addEventListener('click', async () => {
+      const file = document.getElementById('file').files[0];
+      const token = document.getElementById('token').value.trim();
+
+      if (!file || !token) {
+        log.textContent = '❌ Select the CSV and enter the migration token.';
+        return;
+      }
+
+      button.disabled = true;
+      log.textContent = 'Reading backup…\n';
+
+      try {
+        const data = parseSupabaseCsv(await file.text());
+
+        for (const [table, expectedRows] of Object.entries(EXPECTED)) {
+          if (!Array.isArray(data[table]) || data[table].length !== expectedRows) {
+            throw new Error(`${table}: expected ${expectedRows} rows, found ${data[table]?.length ?? 'none'}`);
+          }
+          add(`✅ ${table}: ${expectedRows} rows verified`);
+        }
+
+        add('\nStarting transfer…');
+
+        for (const table of Object.keys(EXPECTED)) {
+          const response = await fetch('/.netlify/functions/migration-import', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ table, data: data[table] }),
+          });
+
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(`${table}: ${result.error || `HTTP ${response.status}`}`);
+          }
+          add(`📦 ${table}: ${result.rows} rows imported`);
+        }
+
+        add('\n🎉 MIGRATION COMPLETE');
+        add('All 7 public datasets are now stored in Netlify Blobs.');
+        button.textContent = 'Migration complete ✅';
+      } catch (error) {
+        add(`\n❌ ${error instanceof Error ? error.message : String(error)}`);
+        add('Nothing else will be sent until you press Start again.');
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
