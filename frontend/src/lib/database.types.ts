@@ -98,27 +98,27 @@ export interface RaidStats {
 }
 
 export interface BossStats {
-  hp?: number
-  attack?: number | string
-  armor?: number | string
-  armorPen?: number | string
-  hit?: number | string
-  dodge?: number | string
-  critical?: number | string
-  criticalRes?: number | string
-  expertise?: number | string
-  parry?: number | string
-  block?: number | string
-  ignoreArmor?: number | string
-  dmgAmp?: number | string
-  dmgRed?: number | string
-  spellPen?: number | string
-  fireRes?: number
-  frostRes?: number
-  arcaneRes?: number
-  natureRes?: number
-  shadowRes?: number
-  holyRes?: number
+  hp: number
+  attack: number | string
+  armor: number | string
+  armorPen: number | string
+  hit: number | string
+  dodge: number | string
+  critical: number | string
+  criticalRes: number | string
+  expertise: number | string
+  parry: number | string
+  block: number | string
+  ignoreArmor: number | string
+  dmgAmp: number | string
+  dmgRed: number | string
+  spellPen: number | string
+  fireRes: number
+  frostRes: number
+  arcaneRes: number
+  natureRes: number
+  shadowRes: number
+  holyRes: number
 }
 
 export interface BossSkill {
