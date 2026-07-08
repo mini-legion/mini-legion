@@ -1,6 +1,3 @@
-// Tipos generados para Supabase Database
-// Basados en la estructura de Mini Legion API
-
 export type Json =
   | string
   | number
@@ -9,13 +6,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-// Tipos de secciones de guías
 export interface GuideSection {
   type: 'tips' | 'steps' | 'text' | 'image' | 'video' | 'table' | 'warning' | 'note'
   title?: string
   content?: string
-  tips?: { title: string; description: string }[]
-  steps?: { step: number; title: string; description: string }[]
+  tips?: { icon?: string; title: string; description: string }[]
+  steps?: { step?: number; stepNumber?: number; title: string; description: string }[]
   image?: string
   imageCaption?: string
   videoUrl?: string
@@ -26,7 +22,6 @@ export interface GuideSection {
   tableRows?: string[][]
 }
 
-// Tipos de builds
 export interface BuildImages {
   skills?: string
   skills2?: string
@@ -42,16 +37,15 @@ export interface BuildRune {
   runeName: string
   description: string
   icon: string
+  priority?: number
 }
 
 export interface BuildGearGuide {
-  // Legacy format (for healer builds)
   dungeonStats?: { priority: string[]; description: string }
   adventureStats?: {
     armor: { priority: string[]; description: string }
     accessories: { priority: string[]; description: string }
   }
-  // New format (for DPS builds like Hunter Survival)
   weapon?: {
     title?: string
     recommendation: string
@@ -67,16 +61,16 @@ export interface BuildGearGuide {
     expertise?: string
     note?: string
   }
+  [key: string]: unknown
 }
 
 export interface BuildRefinesGuide {
   priority?: string[]
-  // Legacy format (for healer builds)
   details?: { slot: string; stats: string[] }[]
   tips?: string
-  // New format (for DPS builds like Hunter Survival)
   notes?: string[]
   tip?: string
+  [key: string]: unknown
 }
 
 export interface BuildSpellGuide {
@@ -88,37 +82,43 @@ export interface BuildSpellGuide {
   autocast: boolean
 }
 
-// Tipos de raids
+export interface RaidDrop {
+  name: string
+  type?: string
+  dropRate?: string
+  image?: string
+}
+
 export interface RaidStats {
   sta?: number
   armor?: number
   gearLvlDrop?: number
   importantDrop?: string
-  importantDrops?: { name: string; type?: string; dropRate?: string; image?: string }[]
+  importantDrops?: RaidDrop[]
 }
 
 export interface BossStats {
-  hp: number
-  attack: number | string
-  armor: number | string
-  armorPen: number | string
-  hit: number | string
-  dodge: number | string
-  critical: number | string
-  criticalRes: number | string
-  expertise: number | string
-  parry: number | string
-  block: number | string
-  ignoreArmor: number | string
-  dmgAmp: number | string
-  dmgRed: number | string
-  spellPen: number | string
-  fireRes: number
-  frostRes: number
-  arcaneRes: number
-  natureRes: number
-  shadowRes: number
-  holyRes: number
+  hp?: number
+  attack?: number | string
+  armor?: number | string
+  armorPen?: number | string
+  hit?: number | string
+  dodge?: number | string
+  critical?: number | string
+  criticalRes?: number | string
+  expertise?: number | string
+  parry?: number | string
+  block?: number | string
+  ignoreArmor?: number | string
+  dmgAmp?: number | string
+  dmgRed?: number | string
+  spellPen?: number | string
+  fireRes?: number
+  frostRes?: number
+  arcaneRes?: number
+  natureRes?: number
+  shadowRes?: number
+  holyRes?: number
 }
 
 export interface BossSkill {
@@ -141,36 +141,25 @@ export interface SubRaid {
   recommendedGearLvl: number | string
   gearDrop: number | string
   importantDrop: string
+  bosses?: Boss[]
   description?: string
-}
-
-export interface RaidMechanic {
-  title: string
-  description: string
-  icon?: string
-}
-
-export interface RaidReward {
-  name: string
-  type?: string
-  image?: string
-  dropRate?: string
 }
 
 export interface Guide {
   id: string
   slug: string
   title: string
-  subtitle?: string
+  subtitle?: string | null
   description: string
   category: string
   subcategory: string
-  image?: string
+  image: string | null
   author: string
   date: string
   read_time: string
   tags: string[]
   sections: GuideSection[]
+  related_guides?: string[]
   created_at: string
   updated_at: string
 }
@@ -184,11 +173,12 @@ export interface Build {
   role?: 'DPS' | 'Healer' | 'Tank'
   tier: 'S' | 'A' | 'B' | 'C'
   content_type: string[]
-  image?: string
+  image?: string | null
   images: BuildImages
   author: string
   likes: number
-  intro_text?: string
+  view_count?: number
+  intro_text?: string | null
   sections?: unknown
   runes: BuildRune[]
   gear_guide: BuildGearGuide
@@ -196,26 +186,22 @@ export interface Build {
   spells_guide: BuildSpellGuide[]
   autocast_order: string[]
   healing_tips: string[]
-  talent_tips?: string
+  talent_tips?: string | null
   created_at: string
   updated_at: string
 }
 
 export interface Raid {
   id: string
-  title: string
+  name: string
   description: string
-  category: string
   subcategory: string
   difficulty: string
   min_level: number
-  recommended_gear: string
-  image?: string
-  bosses: Boss[]
-  sub_raids?: SubRaid[]
-  mechanics: RaidMechanic[]
-  rewards: RaidReward[]
-  tips: string[]
+  image?: string | null
+  stats: RaidStats
+  rewards: string[]
+  subraids: SubRaid[]
   created_at: string
   updated_at: string
 }
@@ -223,25 +209,23 @@ export interface Raid {
 export interface Code {
   id: string
   code: string
-  rewards: string
-  description: string
+  rewards: string[]
   date_added: string
-  expiry_date?: string
+  expires_at: string | null
   is_active: boolean
   created_at: string
-  updated_at: string
 }
 
 export interface ContentCreator {
   id: string
   name: string
   platform: string
-  avatar?: string | null
+  avatar: string | null
   followers?: string
   description: string
   url: string
   featured: boolean
-  youtube_channel_id?: string | null
+  youtube_channel_id: string | null
   created_at: string
 }
 
@@ -257,10 +241,20 @@ export interface RoadmapItem {
 }
 
 export interface GearCollection {
+  id?: number
+  'Collection Status'?: string
   'Gear Collection Name': string
-  'Set Bonus 2 Pieces': string
-  'Set Bonus 4 Pieces': string
+  'Drop Item Name': string
   'Location': string
-  'Boss': string
-  'Gear Drop': string
+  'Affix': string
+  'Attribute 1': string
+  'Attribute 2': string
+  'Affix Type'?: string
+  'Affix Value': string
+  'Upstar Item'?: string
+  'Attribute Type'?: string
+  'Attribute Value': number
+  'Attribute 2 Type'?: string
+  'Attribute 2 Value': number
+  'Upgrade Item'?: string
 }
