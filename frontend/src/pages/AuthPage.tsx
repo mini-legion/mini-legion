@@ -24,12 +24,9 @@ export const AuthPage = () => {
           <Card className="p-8 text-center" glow="green">
             <div className="text-5xl mb-4">✅</div>
             <h2 className="text-2xl font-black text-slate-100 mb-3">Logged in</h2>
-            <p className="text-slate-400 mb-6">You can now submit builds and manage your account.</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/builds/submit" className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-slate-950 font-black">
-                Submit Build
-              </Link>
-              <Link to="/account" className="px-6 py-3 rounded-xl bg-slate-800 text-slate-200 font-bold border border-slate-700">
+            <p className="text-slate-400 mb-6">You can manage your account. Community submissions will return soon.</p>
+            <div className="flex justify-center">
+              <Link to="/account" className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-slate-950 font-black">
                 Open Account
               </Link>
             </div>
@@ -69,11 +66,10 @@ export const AuthPage = () => {
           displayName: displayName.trim(),
           marketingOptIn,
         });
-        setMessage('Account created. Please check your email and confirm your address before logging in.');
-        setPassword('');
+        setMessage('Account created. You are now logged in.');
       } else {
         await signIn(email.trim(), password);
-        navigate('/builds/submit');
+        navigate('/account');
       }
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : 'Authentication failed.');
@@ -86,7 +82,7 @@ export const AuthPage = () => {
     <div>
       <PageHeader
         title={mode === 'register' ? 'Create Account' : 'Login'}
-        subtitle="Accounts are required before submitting builds or future guide edits"
+        subtitle="Login to manage your Mini Legion creator profile"
         gradient="green"
       />
 

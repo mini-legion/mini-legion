@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/UI';
-import { MyBuildSubmissions } from '../components/MyBuildSubmissions';
-import { MyPublishedBuilds } from '../components/MyPublishedBuilds';
-import { AccountAdminManager } from '../components/AccountAdminManager';
 import { useAuth } from '../lib/auth';
 
 export const AccountPage = () => {
@@ -36,12 +33,12 @@ export const AccountPage = () => {
   if (!user) {
     return (
       <div>
-        <PageHeader title="Account Required" subtitle="Login or create an account to manage your submissions" gradient="green" />
+        <PageHeader title="Account Required" subtitle="Login or create an account" gradient="green" />
         <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <Card className="p-8 text-center" glow="green">
             <div className="text-5xl mb-4">🔐</div>
             <h2 className="text-2xl font-black text-slate-100 mb-3">Please login first</h2>
-            <p className="text-slate-400 mb-6">Accounts are required for build submissions and future guide editing.</p>
+            <p className="text-slate-400 mb-6">Login to manage your Mini Legion profile.</p>
             <Link to="/login" className="inline-flex rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-3 font-black text-slate-950">
               Login / Register
             </Link>
@@ -79,23 +76,18 @@ export const AccountPage = () => {
 
   return (
     <div>
-      <PageHeader title="Account" subtitle="Manage your creator profile, submissions and admin tools" gradient="green" />
+      <PageHeader title="Account" subtitle="Manage your Mini Legion creator profile" gradient="green" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
         <Card className="p-6" glow="green">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
               <h2 className="text-xl font-black text-slate-100 mb-2">Profile</h2>
-              <p className="text-sm text-slate-400">This profile is used for submissions, ownership and creator features.</p>
+              <p className="text-sm text-slate-400">Your migrated Mini Legion account and creator profile.</p>
             </div>
-            {profile?.role === 'admin' && (
+            {profile?.role !== 'user' && (
               <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-amber-300">
-                Admin Account
-              </span>
-            )}
-            {profile?.role === 'creator' && (
-              <span className="rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-green-300">
-                Creator Account
+                {profile?.role} Account
               </span>
             )}
           </div>
@@ -135,10 +127,11 @@ export const AccountPage = () => {
           </form>
         </Card>
 
-        {profile?.role === 'admin' && <AccountAdminManager />}
-
-        <MyPublishedBuilds />
-        <MyBuildSubmissions />
+        <Card className="p-6 text-center">
+          <div className="text-4xl mb-3">🛠️</div>
+          <h2 className="text-xl font-black text-slate-100 mb-2">Community tools are being rebuilt</h2>
+          <p className="text-slate-400">Your submissions, published builds and admin tools will return after the remaining data migration.</p>
+        </Card>
       </div>
     </div>
   );

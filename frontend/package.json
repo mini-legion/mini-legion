@@ -12,8 +12,10 @@
     "seed:all": "tsx scripts/seed.ts --all ./seed-data"
   },
   "dependencies": {
+    "@netlify/blobs": "latest",
     "@reduxjs/toolkit": "^2.11.2",
     "@supabase/supabase-js": "^2.90.1",
+    "bcryptjs": "latest",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-redux": "^9.2.0",
