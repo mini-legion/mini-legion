@@ -10,37 +10,50 @@ type PublicData = {
   roadmap_items: RoadmapItem[];
 };
 
+type DatasetName = keyof PublicData;
+
+const DATASETS: DatasetName[] = [
+  'guides',
+  'builds',
+  'raids',
+  'codes',
+  'collections',
+  'content_creators',
+  'roadmap_items',
+];
+
 let publicDataPromise: Promise<PublicData> | null = null;
 
-async function loadArchive(): Promise<PublicData> {
-  const [part0, part1] = await Promise.all([
-    fetch('/data/public-data.00.b64').then((response) => {
-      if (!response.ok) throw new Error('Public data archive part 0 could not be loaded');
-      return response.text();
-    }),
-    fetch('/data/public-data.01.b64').then((response) => {
-      if (!response.ok) throw new Error('Public data archive part 1 could not be loaded');
-      return response.text();
-    }),
-  ]);
-
-  const encoded = `${part0.trim()}${part1.trim()}`;
-  const binary = atob(encoded);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
+async function loadDataset<T>(name: DatasetName): Promise<T[]> {
+  const response = await fetch(`/data/${name}.json`, { cache: 'force-cache' });
+  if (!response.ok) {
+    throw new Error(`Public dataset ${name} could not be loaded (${response.status})`);
   }
 
-  const stream = new Blob([bytes])
-    .stream()
-    .pipeThrough(new DecompressionStream('gzip'));
-  const json = await new Response(stream).text();
+  const data = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error(`Public dataset ${name} is invalid`);
+  }
 
-  return JSON.parse(json) as PublicData;
+  return data as T[];
+}
+
+async function loadPublicData(): Promise<PublicData> {
+  const values = await Promise.all(DATASETS.map((name) => loadDataset(name)));
+
+  return DATASETS.reduce((result, name, index) => {
+    result[name] = values[index] as never;
+    return result;
+  }, {} as PublicData);
 }
 
 export function getPublicData(): Promise<PublicData> {
-  if (!publicDataPromise) publicDataPromise = loadArchive();
+  if (!publicDataPromise) {
+    publicDataPromise = loadPublicData().catch((error) => {
+      publicDataPromise = null;
+      throw error;
+    });
+  }
+
   return publicDataPromise;
 }
