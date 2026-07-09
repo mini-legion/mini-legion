@@ -22,6 +22,15 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - name: Upload original archive parts
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-public-archive
+          path: |
+            frontend/public/data/public-data.00.b64
+            frontend/public/data/public-data.01.b64
+          if-no-files-found: error
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
