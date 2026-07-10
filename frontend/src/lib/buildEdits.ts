@@ -97,9 +97,27 @@ async function getCurrentUserId() {
 export async function getMyPublishedBuilds(): Promise<CreatorBuild[]> {
   const userId = await getCurrentUserId();
   const builds = await getBuilds();
+
   return builds
-    .filter((build) => String((build as CreatorBuild).user_id || '') === userId)
-    .sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()) as CreatorBuild[];
+    .filter((build) => String(build.user_id || '') === userId)
+    .map((build) => ({
+      id: build.id,
+      title: build.title,
+      description: build.description || null,
+      hero_class: build.hero_class,
+      spec: build.spec || null,
+      role: build.role || null,
+      content_type: build.content_type || [],
+      author: build.author,
+      image: build.image || null,
+      images: (build.images || null) as unknown as Record<string, string> | null,
+      intro_text: build.intro_text || null,
+      talent_tips: build.talent_tips || null,
+      updated_at: build.updated_at || build.created_at || new Date(0).toISOString(),
+      user_id: build.user_id || null,
+      sections: build.sections as Array<{ title?: string; content?: string }> | undefined,
+    }))
+    .sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime());
 }
 
 export async function getMyBuildEditRequests(): Promise<CreatorBuildEditRequest[]> {
