@@ -9,13 +9,49 @@ function byName(a: string | null | undefined, b: string | null | undefined) {
   return (a || '').localeCompare(b || '')
 }
 
+type PublicOverrides = {
+  guides: Record<string, Partial<Guide>>
+  builds: Record<string, Partial<Build>>
+}
+
+let overridesPromise: Promise<PublicOverrides> | null = null
+
+async function getPublicOverrides(): Promise<PublicOverrides> {
+  if (!overridesPromise) {
+    overridesPromise = fetch('/api/public-overrides', { cache: 'no-cache' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`Override API failed (${response.status})`)
+        const data = await response.json() as Partial<PublicOverrides>
+        return {
+          guides: data.guides && typeof data.guides === 'object' ? data.guides : {},
+          builds: data.builds && typeof data.builds === 'object' ? data.builds : {},
+        }
+      })
+      .catch(() => ({ guides: {}, builds: {} }))
+  }
+
+  return overridesPromise
+}
+
+function mergeById<T extends { id: string }>(base: T[], overrides: Record<string, Partial<T>>) {
+  const merged = new Map(base.map((item) => [item.id, { ...item }]))
+
+  Object.entries(overrides).forEach(([id, override]) => {
+    const current = merged.get(id)
+    merged.set(id, { ...(current || { id } as T), ...override, id } as T)
+  })
+
+  return [...merged.values()]
+}
+
 // ============================================
-// GUIDES API — STATIC CDN DATA
+// GUIDES API — STATIC CDN DATA + D1 OVERRIDES
 // ============================================
 
 export async function getGuides() {
-  const data = await getPublicData()
-  return [...data.guides].sort((a, b) => byDateDesc(a.date, b.date)) as Guide[]
+  const [data, overrides] = await Promise.all([getPublicData(), getPublicOverrides()])
+  return mergeById(data.guides as Guide[], overrides.guides)
+    .sort((a, b) => byDateDesc(a.date, b.date))
 }
 
 export async function getGuidesBySubcategory(subcategory: string) {
@@ -24,26 +60,27 @@ export async function getGuidesBySubcategory(subcategory: string) {
 }
 
 export async function getGuideBySlug(slug: string) {
-  const data = await getPublicData()
-  const guide = data.guides.find((item) => item.slug === slug)
+  const guides = await getGuides()
+  const guide = guides.find((item) => item.slug === slug)
   if (!guide) throw new Error('Guide not found')
-  return guide as Guide
+  return guide
 }
 
 export async function getGuideById(id: string) {
-  const data = await getPublicData()
-  const guide = data.guides.find((item) => item.id === id)
+  const guides = await getGuides()
+  const guide = guides.find((item) => item.id === id)
   if (!guide) throw new Error('Guide not found')
-  return guide as Guide
+  return guide
 }
 
 // ============================================
-// BUILDS API — STATIC CDN DATA
+// BUILDS API — STATIC CDN DATA + D1 OVERRIDES
 // ============================================
 
 export async function getBuilds() {
-  const data = await getPublicData()
-  return [...data.builds].sort((a, b) => byDateDesc(a.created_at, b.created_at)) as Build[]
+  const [data, overrides] = await Promise.all([getPublicData(), getPublicOverrides()])
+  return mergeById(data.builds as Build[], overrides.builds)
+    .sort((a, b) => byDateDesc(a.created_at, b.created_at))
 }
 
 export async function getLatestBuilds(limit = 6) {
@@ -52,20 +89,20 @@ export async function getLatestBuilds(limit = 6) {
 }
 
 export async function getMostViewedBuilds(limit = 6) {
-  const data = await getPublicData()
-  return [...data.builds]
+  const builds = await getBuilds()
+  return [...builds]
     .sort((a, b) => {
       const viewsA = Number((a as Build & { view_count?: number }).view_count || 0)
       const viewsB = Number((b as Build & { view_count?: number }).view_count || 0)
       return viewsB - viewsA || byDateDesc(a.created_at, b.created_at)
     })
-    .slice(0, limit) as Build[]
+    .slice(0, limit)
 }
 
 export async function trackBuildView(id: string) {
   if (!id) return 0
-  const data = await getPublicData()
-  const build = data.builds.find((item) => item.id === id) as (Build & { view_count?: number }) | undefined
+  const builds = await getBuilds()
+  const build = builds.find((item) => item.id === id) as (Build & { view_count?: number }) | undefined
   return Number(build?.view_count || 0)
 }
 
@@ -75,10 +112,10 @@ export async function getBuildsByClass(heroClass: string) {
 }
 
 export async function getBuildById(id: string) {
-  const data = await getPublicData()
-  const build = data.builds.find((item) => item.id === id)
+  const builds = await getBuilds()
+  const build = builds.find((item) => item.id === id)
   if (!build) throw new Error('Build not found')
-  return build as Build
+  return build
 }
 
 export async function getBuildsByTier(tier: 'S' | 'A' | 'B' | 'C') {
