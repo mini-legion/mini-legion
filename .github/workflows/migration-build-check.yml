@@ -25,7 +25,15 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --silent
 
       - name: Build
-        run: npm run build
+        run: npm run build 2>&1 | tee build.log; test ${PIPESTATUS[0]} -eq 0
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostics
+          path: frontend/build.log
+          if-no-files-found: ignore

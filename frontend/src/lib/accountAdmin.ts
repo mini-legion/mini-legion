@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getBuilds, getGuides } from './api';
 
 export interface AccountAdminGuide {
   id: string;
@@ -14,6 +14,7 @@ export interface AccountAdminGuide {
   tags: string[];
   sections: unknown;
   updated_at: string;
+  user_id?: string | null;
 }
 
 export interface AccountAdminBuild {
@@ -31,6 +32,7 @@ export interface AccountAdminBuild {
   intro_text?: string | null;
   talent_tips: string | null;
   updated_at: string;
+  user_id?: string | null;
 }
 
 export interface AccountAdminSubmission {
@@ -55,30 +57,33 @@ export interface AccountAdminDashboard {
   submissions: AccountAdminSubmission[];
 }
 
+const COMMUNITY_ENDPOINT = '/api/community';
+
+async function request<T>(action: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${COMMUNITY_ENDPOINT}?action=${encodeURIComponent(action)}`, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({ error: 'Admin service returned an invalid response.' })) as T & { error?: string };
+  if (!response.ok) throw new Error(data.error || 'Admin request failed.');
+  return data;
+}
+
 export async function getAccountAdminDashboard(): Promise<AccountAdminDashboard> {
-  const [{ data: guides, error: guidesError }, { data: builds, error: buildsError }, { data: submissions, error: submissionsError }] = await Promise.all([
-    (supabase as any)
-      .from('guides')
-      .select('id, slug, title, subtitle, description, category, subcategory, image, author, read_time, tags, sections, updated_at')
-      .order('updated_at', { ascending: false }),
-    (supabase as any)
-      .from('builds')
-      .select('id, title, description, hero_class, spec, role, tier, author, image, images, content_type, talent_tips, updated_at')
-      .order('updated_at', { ascending: false }),
-    (supabase as any)
-      .from('build_submissions')
-      .select('id, status, contributor_name, contact, hero_class, spec, role, title, description, review_notes, approved_build_id, created_at, updated_at')
-      .order('created_at', { ascending: false }),
+  const [guides, builds, adminData] = await Promise.all([
+    getGuides(),
+    getBuilds(),
+    request<{ submissions: AccountAdminSubmission[] }>('admin-dashboard'),
   ]);
 
-  if (guidesError) throw guidesError;
-  if (buildsError) throw buildsError;
-  if (submissionsError) throw submissionsError;
-
   return {
-    guides: (guides || []) as AccountAdminGuide[],
-    builds: (builds || []) as AccountAdminBuild[],
-    submissions: (submissions || []) as AccountAdminSubmission[],
+    guides: [...guides].sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()) as AccountAdminGuide[],
+    builds: [...builds].sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()) as AccountAdminBuild[],
+    submissions: adminData.submissions || [],
   };
 }
 
@@ -96,54 +101,67 @@ function parseList(value: string) {
 }
 
 export async function updateAccountAdminGuide(guide: AccountAdminGuide, sectionsText: string, tagsText: string) {
-  const { error } = await (supabase as any)
-    .from('guides')
-    .update({
-      title: guide.title,
-      subtitle: guide.subtitle || null,
-      description: guide.description || null,
-      category: guide.category,
-      subcategory: guide.subcategory,
-      image: guide.image || null,
-      author: guide.author,
-      read_time: guide.read_time || null,
-      tags: parseList(tagsText),
-      sections: parseJsonField(sectionsText, guide.sections),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', guide.id);
+  const data = {
+    ...guide,
+    title: guide.title.trim(),
+    subtitle: guide.subtitle?.trim() || null,
+    description: guide.description?.trim() || null,
+    category: guide.category.trim(),
+    subcategory: guide.subcategory.trim(),
+    image: guide.image?.trim() || null,
+    author: guide.author.trim(),
+    read_time: guide.read_time?.trim() || null,
+    tags: parseList(tagsText),
+    sections: parseJsonField(sectionsText, guide.sections),
+    updated_at: new Date().toISOString(),
+  };
 
-  if (error) throw error;
+  await request<{ ok: boolean }>('admin-save-content', {
+    method: 'POST',
+    body: JSON.stringify({
+      content_type: 'guide',
+      content_id: guide.id,
+      owner_user_id: guide.user_id || null,
+      data,
+    }),
+  });
 }
 
 export async function updateAccountAdminBuild(build: AccountAdminBuild, imagesText: string, contentTypesText: string) {
-  const { error } = await (supabase as any)
-    .from('builds')
-    .update({
-      title: build.title,
-      description: build.description || null,
-      hero_class: build.hero_class,
-      spec: build.spec || null,
-      role: build.role || null,
-      tier: build.tier,
-      author: build.author,
-      image: build.image || null,
-      images: parseJsonField(imagesText, build.images),
-      content_type: parseList(contentTypesText),
-      talent_tips: build.talent_tips || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', build.id);
+  const data = {
+    ...build,
+    title: build.title.trim(),
+    description: build.description?.trim() || null,
+    hero_class: build.hero_class.trim().toLowerCase(),
+    spec: build.spec?.trim() || null,
+    role: build.role || null,
+    tier: build.tier,
+    author: build.author.trim(),
+    image: build.image?.trim() || null,
+    images: parseJsonField(imagesText, build.images),
+    content_type: parseList(contentTypesText),
+    talent_tips: build.talent_tips?.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
 
-  if (error) throw error;
+  await request<{ ok: boolean }>('admin-save-content', {
+    method: 'POST',
+    body: JSON.stringify({
+      content_type: 'build',
+      content_id: build.id,
+      owner_user_id: build.user_id || null,
+      data,
+    }),
+  });
 }
 
 export async function updateAccountAdminSubmission(submission: AccountAdminSubmission) {
-  const { error } = await (supabase as any).rpc('auth_admin_update_submission_status', {
-    p_id: submission.id,
-    p_status: submission.status,
-    p_review_notes: submission.review_notes || null,
+  await request<{ ok: boolean; approved_build_id?: string | null }>('admin-review-submission', {
+    method: 'POST',
+    body: JSON.stringify({
+      id: submission.id,
+      status: submission.status,
+      review_notes: submission.review_notes || null,
+    }),
   });
-
-  if (error) throw error;
 }

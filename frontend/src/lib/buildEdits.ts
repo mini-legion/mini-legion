@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getBuilds } from './api';
 
 export type BuildRole = 'DPS' | 'Healer' | 'Tank' | null;
 export type EditRequestStatus = 'pending' | 'reviewing' | 'approved' | 'rejected';
@@ -17,6 +17,8 @@ export interface CreatorBuild {
   intro_text: string | null;
   talent_tips: string | null;
   updated_at: string;
+  user_id?: string | null;
+  sections?: Array<{ title?: string; content?: string }>;
 }
 
 export interface CreatorBuildEditRequest {
@@ -35,6 +37,13 @@ export interface CreatorBuildEditRequest {
   proposed_talent_tips: string | null;
   proposed_image: string | null;
   proposed_images: Record<string, string>;
+  proposed_accessories?: string | null;
+  proposed_gear_text?: string | null;
+  proposed_rune_text?: string | null;
+  proposed_skill_text?: string | null;
+  proposed_refine_text?: string | null;
+  proposed_misc_text?: string | null;
+  proposed_details?: string | null;
   created_at: string;
   updated_at: string;
   reviewed_at: string | null;
@@ -53,50 +62,72 @@ export interface CreatorBuildEditPayload {
   proposed_talent_tips: string | null;
   proposed_image: string | null;
   proposed_images: Record<string, string>;
+  proposed_accessories?: string | null;
+  proposed_gear_text?: string | null;
+  proposed_rune_text?: string | null;
+  proposed_skill_text?: string | null;
+  proposed_refine_text?: string | null;
+  proposed_misc_text?: string | null;
+  proposed_details?: string | null;
+}
+
+const COMMUNITY_ENDPOINT = '/api/community';
+
+async function request<T>(action: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${COMMUNITY_ENDPOINT}?action=${encodeURIComponent(action)}`, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({ error: 'Community service returned an invalid response.' })) as T & { error?: string };
+  if (!response.ok) throw new Error(data.error || 'Community request failed.');
+  return data;
 }
 
 async function getCurrentUserId() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new Error('Please login first.');
+  const response = await fetch('/api/auth?action=me', { credentials: 'same-origin', cache: 'no-store' });
+  const data = await response.json().catch(() => ({ user: null })) as { user?: { id?: string } | null };
+  if (!response.ok || !data.user?.id) throw new Error('Please login first.');
   return data.user.id;
 }
 
 export async function getMyPublishedBuilds(): Promise<CreatorBuild[]> {
   const userId = await getCurrentUserId();
+  const builds = await getBuilds();
 
-  const { data, error } = await (supabase as any)
-    .from('builds')
-    .select('id, title, description, hero_class, spec, role, content_type, author, image, images, intro_text, talent_tips, updated_at')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false });
-
-  if (error) throw error;
-  return (data || []) as CreatorBuild[];
+  return builds
+    .filter((build) => String(build.user_id || '') === userId)
+    .map((build) => ({
+      id: build.id,
+      title: build.title,
+      description: build.description || null,
+      hero_class: build.hero_class,
+      spec: build.spec || null,
+      role: build.role || null,
+      content_type: build.content_type || [],
+      author: build.author,
+      image: build.image || null,
+      images: (build.images || null) as unknown as Record<string, string> | null,
+      intro_text: build.intro_text || null,
+      talent_tips: build.talent_tips || null,
+      updated_at: build.updated_at || build.created_at || new Date(0).toISOString(),
+      user_id: build.user_id || null,
+      sections: build.sections as Array<{ title?: string; content?: string }> | undefined,
+    }))
+    .sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime());
 }
 
 export async function getMyBuildEditRequests(): Promise<CreatorBuildEditRequest[]> {
-  const userId = await getCurrentUserId();
-
-  const { data, error } = await (supabase as any)
-    .from('build_edit_requests')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data || []) as CreatorBuildEditRequest[];
+  const data = await request<{ requests: CreatorBuildEditRequest[] }>('my-edit-requests');
+  return data.requests || [];
 }
 
 export async function submitBuildEditRequest(payload: CreatorBuildEditPayload) {
-  const userId = await getCurrentUserId();
-
-  const { error } = await (supabase as any)
-    .from('build_edit_requests')
-    .insert({
-      ...payload,
-      user_id: userId,
-      status: 'pending',
-    });
-
-  if (error) throw error;
+  await request<{ ok: boolean; id: string }>('submit-edit-request', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }

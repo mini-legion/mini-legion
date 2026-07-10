@@ -1,7 +1,5 @@
-import { supabase } from './supabase';
-
 export interface BuildSubmissionPayload {
-  id: string;
+  id?: string;
   user_id?: string;
   contributor_name: string;
   contact?: string | null;
@@ -20,7 +18,9 @@ export interface BuildSubmissionPayload {
   image_groups?: Record<string, string[]>;
 }
 
-export interface MyBuildSubmission extends BuildSubmissionPayload {
+export interface MyBuildSubmission extends Omit<BuildSubmissionPayload, 'id'> {
+  id: string;
+  user_id: string;
   status: 'pending' | 'reviewing' | 'approved' | 'rejected';
   review_notes?: string | null;
   approved_build_id?: string | null;
@@ -52,135 +52,58 @@ export interface ContributorRankingEntry {
   latestUrl: string | null;
 }
 
-function sanitizeFileName(fileName: string) {
-  return fileName
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 80);
-}
+const COMMUNITY_ENDPOINT = '/api/community';
 
-function sanitizeGroupName(groupName: string) {
-  return groupName
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '') || 'general';
-}
+async function communityRequest<T>(action: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${COMMUNITY_ENDPOINT}?action=${encodeURIComponent(action)}`, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.headers || {}),
+    },
+  });
 
-async function getCurrentUserId() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new Error('Please login before submitting builds.');
-  return data.user.id;
+  const data = await response.json().catch(() => ({ error: 'Community service returned an invalid response.' })) as T & { error?: string };
+  if (!response.ok) throw new Error(data.error || 'Community request failed.');
+  return data;
 }
 
 export async function uploadBuildSubmissionImages(
-  submissionId: string,
+  _submissionId: string,
   files: File[],
-  groupName = 'general'
+  _groupName = 'general'
 ) {
-  const userId = await getCurrentUserId();
-  const uploadedPaths: string[] = [];
-  const safeGroup = sanitizeGroupName(groupName);
-
-  for (const [index, file] of files.entries()) {
-    const safeName = sanitizeFileName(file.name || `image-${index}.png`);
-    const path = `${userId}/${submissionId}/${safeGroup}-${Date.now()}-${index}-${safeName}`;
-
-    const { error } = await supabase.storage
-      .from('build-submissions')
-      .upload(path, file, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: file.type || 'application/octet-stream',
-      });
-
-    if (error) throw error;
-    uploadedPaths.push(path);
+  if (files.length > 0) {
+    throw new Error('Screenshot uploads are being moved to Cloudflare storage. Please submit the text build without screenshots for now.');
   }
-
-  return uploadedPaths;
+  return [] as string[];
 }
 
 export async function submitBuild(payload: BuildSubmissionPayload) {
-  const userId = await getCurrentUserId();
-
-  const { error } = await (supabase as any)
-    .from('build_submissions')
-    .insert({
-      ...payload,
-      user_id: payload.user_id || userId,
-      status: 'pending',
-    });
-
-  if (error) throw error;
+  await communityRequest<{ submission: MyBuildSubmission }>('submit-build', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function getMyBuildSubmissions(): Promise<MyBuildSubmission[]> {
-  await getCurrentUserId();
-
-  const { data, error } = await (supabase as any)
-    .from('build_submissions')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data || []) as MyBuildSubmission[];
+  const data = await communityRequest<{ submissions: MyBuildSubmission[] }>('my-submissions');
+  return data.submissions || [];
 }
 
 export async function updateMyBuildSubmission(
   submissionId: string,
   updates: EditableBuildSubmissionFields
 ): Promise<MyBuildSubmission> {
-  await getCurrentUserId();
-
-  const { data, error } = await (supabase as any)
-    .from('build_submissions')
-    .update(updates)
-    .eq('id', submissionId)
-    .in('status', ['pending', 'reviewing'])
-    .select('*')
-    .single();
-
-  if (error) throw error;
-  return data as MyBuildSubmission;
+  const data = await communityRequest<{ submission: MyBuildSubmission }>('update-submission', {
+    method: 'POST',
+    body: JSON.stringify({ id: submissionId, ...updates }),
+  });
+  return data.submission;
 }
 
 export async function getContributorRankings(): Promise<ContributorRankingEntry[]> {
-  const { data, error } = await (supabase as any)
-    .from('content_contributions')
-    .select('contributor_name, contribution_type, title, points, published_url, created_at')
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-
-  const rows = (data || []) as ContributionRow[];
-  const grouped = new Map<string, ContributorRankingEntry>();
-
-  rows.forEach((row) => {
-    const name = row.contributor_name || 'Unknown';
-    const current = grouped.get(name) || {
-      name,
-      builds: 0,
-      guides: 0,
-      updates: 0,
-      points: 0,
-      latestContribution: row.title,
-      latestUrl: row.published_url,
-    };
-
-    if (row.contribution_type === 'build') current.builds += 1;
-    if (row.contribution_type === 'guide') current.guides += 1;
-    if (row.contribution_type === 'update') current.updates += 1;
-
-    current.points += row.points || 0;
-
-    grouped.set(name, current);
-  });
-
-  return [...grouped.values()]
-    .sort((a, b) => b.points - a.points || b.builds + b.guides - (a.builds + a.guides))
-    .slice(0, 10);
+  const data = await communityRequest<{ rankings: ContributorRankingEntry[] }>('rankings');
+  return data.rankings || [];
 }
