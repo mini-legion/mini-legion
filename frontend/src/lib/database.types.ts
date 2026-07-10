@@ -147,6 +147,7 @@ export interface SubRaid {
 
 export interface Guide {
   id: string
+  user_id?: string | null
   slug: string
   title: string
   subtitle?: string | null
@@ -166,6 +167,7 @@ export interface Guide {
 
 export interface Build {
   id: string
+  user_id?: string | null
   title: string
   description: string
   hero_class: string
